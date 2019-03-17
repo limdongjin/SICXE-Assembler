@@ -10,14 +10,16 @@
 #include <stdbool.h>
 #include "command_execute.h"
 
-shell_status command_execute(Command* user_command){
+shell_status command_execute(Command *user_command, State *state_store) {
+    assert(user_command);
+    assert(state_store);
     shell_status status;
     switch (user_command->type){
         case TYPE_HELP:
             execute_help();
             return EXECUTE_SUCCESS;
         case TYPE_HISTORY:
-            return execute_history();
+            return execute_history(state_store->histories_state, user_command->raw_command);
         case TYPE_QUIT:
             return execute_quit();
         case TYPE_DIR:
@@ -41,9 +43,11 @@ shell_status command_execute(Command* user_command){
 }
 
 // [TODO] history 구현
-shell_status execute_history(){
+shell_status execute_history(Histories *histories_state, char *last_command) {
+    assert(histories_state);
+    assert(last_command);
     printf("History!\n");
-
+    print_history(histories_state, last_command);
     return EXECUTE_SUCCESS;
 }
 

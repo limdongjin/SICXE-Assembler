@@ -4,7 +4,8 @@
 #include "util.h"
 #include <stdlib.h>
 #include <stdbool.h>
-
+#include <string.h>
+#include <stdio.h>
 typedef struct histories {
     int size;
     LinkedList* list;
@@ -16,4 +17,7 @@ typedef struct history {
 
 Histories* construct_histories();
 History* construct_history();
+History* construct_history_with_string(char* str);
+bool push_history(Histories* histories_store, History* target);
+void print_history(Histories *histories_store, char *last_command);
 #endif

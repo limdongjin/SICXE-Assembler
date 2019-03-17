@@ -2,8 +2,8 @@
 
 LinkedList* construct_linked_list(){
     LinkedList* list = (LinkedList*)malloc(sizeof(*list));
-    list->head = (Node*)malloc(sizeof(Node*));
-    list->tail = (Node*)malloc(sizeof(Node*));
+    list->head = construct_node(NODE_SIZE);
+    list->tail = construct_node(NODE_SIZE);
     list->head->prev = NULL;
     list->head->next = list->tail;
     list->tail->prev = list->head;
@@ -11,7 +11,14 @@ LinkedList* construct_linked_list(){
 
     return list;
 }
-
+Node* construct_node(size_t size){
+    Node* target = (Node*)malloc(size);
+    return target;
+}
 void append_to_linked_list(LinkedList* list, Node* target){
-    target->prev = list->tail
+    target->prev = list->tail->prev;
+    target->next = list->tail;
+    list->tail->prev->next = target;
+    list->tail->prev = target;
+    assert(list->tail->prev == target);
 }
