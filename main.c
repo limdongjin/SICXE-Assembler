@@ -2,9 +2,11 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include "command.h"
-#include "command_test.h"
+#include "state.h"
 int main() {
-    test_tokenizing();
-    user_command_mode();
+    // history
+    // memory
+    State* state_store = construct_state();
+    command_main(state_store);
     return 0;
 }

@@ -1,4 +1,4 @@
-SOURCES=main.c command.c command_test.c
+SOURCES=main.c command.c command_mapping.c command_shell.c command_execute.c
 TARGET=main.out
 
 all: $(TARGET)

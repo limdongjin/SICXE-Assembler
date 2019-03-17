@@ -3,4 +3,4 @@ project(sic_xe_implementation C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(sic_xe_implementation main.c command.c command_test.c)
+add_executable(sic_xe_implementation main.c command.c command_shell.c command_mapping.c command_execute.c state.c state.h util.c util.h history.c history.h)
