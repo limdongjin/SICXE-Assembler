@@ -4,7 +4,7 @@
 #include "command_macro.h"
 #include "command_objects.h"
 #include "state.h"
-#include <stdbool.h>
+
 //#define IS_TYPE(T) (user_command->type == (T))
 shell_status command_execute(Command *user_command, State *state_store);
 void execute_help();
@@ -17,4 +17,5 @@ shell_status execute_fill(Command *user_command, Memories *memories_state);
 shell_status execute_reset(Memories *memories_state);
 shell_status execute_opcode();
 shell_status execute_opcodelist();
+
 #endif

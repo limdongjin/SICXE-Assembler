@@ -10,7 +10,6 @@ typedef struct memory {
 } Memory;
 
 typedef struct memories {
-//    short data[MEMORIES_SIZE];
     Memory data[MEMORIES_SIZE];
     int last_idx;
 } Memories;

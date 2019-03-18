@@ -2,7 +2,7 @@
 
 shell_status command_mapping(Command* user_command){
     assert(user_command);
-    int status = 0;
+    shell_status status;
 
     status = tokenizing(user_command);
     if(status != TOKENIZING_SUCCESS) return status;
@@ -18,7 +18,7 @@ shell_status command_mapping(Command* user_command){
 shell_status tokenizing(Command* user_command){
     assert(user_command);
     static char raw_command[COMMAND_MAX_LEN];
-    char tmp[] ="", cm;
+    char cm;
     int i = 0, comma_cnt = 0, len_raw, flag = 0;
 
     strncpy (raw_command, user_command->raw_command, COMMAND_MAX_LEN);
@@ -66,12 +66,12 @@ shell_status tokenizing(Command* user_command){
     // if(comma_cnt >= 3) return INVALID_INPUT;
     if(user_command->token_cnt <= 2 && comma_cnt == 0)
         return TOKENIZING_SUCCESS;
-    if(user_command->token_cnt != comma_cnt + 2)
+    if((int)user_command->token_cnt != comma_cnt + 2)
         return INVALID_INPUT;
-    if(user_command->token_cnt > TOKEN_MAX_NUM)
+    if((int)user_command->token_cnt > TOKEN_MAX_NUM)
         return TOO_MANY_TOKEN;
 
-    if(user_command->token_cnt <= 0)
+    if((int)user_command->token_cnt <= 0)
         return INVALID_INPUT;
     return TOKENIZING_SUCCESS;
 }

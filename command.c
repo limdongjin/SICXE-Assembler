@@ -1,18 +1,4 @@
 #include "command.h"
-#include "command_shell.h"
-#include "command_mapping.h"
-#include "command_objects.h"
-#include "command_execute.h"
-#include <stdio.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <dirent.h>
-#include <unistd.h>
-#include <assert.h>
-#include <stdbool.h>
 
 bool command_main(State* state_store){
     shell_status status;
@@ -34,6 +20,7 @@ bool command_main(State* state_store){
         push_history(state_store->histories_state,
                 construct_history_with_string(user_command.raw_command));
     }
+    return true;
 }
 
 // [TODO] 예외 상황 추가하기

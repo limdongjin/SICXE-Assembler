@@ -35,7 +35,7 @@ bool push_history(Histories* histories_store, History* target){
 void print_history(Histories *histories_store, char *last_command) {
     assert(histories_store);
     assert(last_command);
-    LinkedList* list = histories_store->list;
+//    LinkedList* list = histories_store->list;
     Node** cur = &histories_store->list->head;
     int i = 0;
     for(i=0;i<histories_store->size + 1;i++){

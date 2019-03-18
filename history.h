@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
+
 typedef struct histories {
     int size;
     LinkedList* list;

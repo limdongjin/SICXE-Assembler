@@ -1,18 +1,8 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <dirent.h>
-#include <unistd.h>
-#include <assert.h>
-#include <stdbool.h>
 #include "command_execute.h"
 
 shell_status command_execute(Command *user_command, State *state_store) {
     assert(user_command);
     assert(state_store);
-    shell_status status;
     switch (user_command->type){
         case TYPE_HELP:
             execute_help();
@@ -60,7 +50,6 @@ void execute_help(){
             "reset\n"
             "opcode mnemonic\n"
             "opcodelist\n");
-    return;
 }
 
 // [TODO] quit 할때 free 처리

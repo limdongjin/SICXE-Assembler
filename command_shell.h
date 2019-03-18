@@ -3,6 +3,8 @@
 
 #include "command_macro.h"
 #include "command_objects.h"
+#include <string.h>
+#include <stdio.h>
 
 shell_status read_input(char** target);
 

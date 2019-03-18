@@ -16,7 +16,7 @@ void print_memories(Memories* memories_state, int start, int end){
     assert(start <= end);
     assert(start < MEMORIES_SIZE);
     assert(end < MEMORIES_SIZE);
-//    printf("%x %x", start, end);
+
     int start_row = (start / 16)*16;
     // ex, [dump 11] 에서 start 는 17이 되고, start_row 는 16이 됨.
     // ex, [dump AA] 에서 start 는 170이 되고, start_row 는 160이 됨. ( 10 == 0xA0)

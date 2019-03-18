@@ -5,8 +5,6 @@
 #include "state.h"
 
 int main() {
-    // history
-    // memory
     State* state_store = construct_state();
     command_main(state_store);
     return 0;

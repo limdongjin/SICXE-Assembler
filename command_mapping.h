@@ -4,10 +4,10 @@
 #include "command_macro.h"
 #include "command_objects.h"
 #include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <stdbool.h>
 #include <assert.h>
+#include <sys/types.h>
+#include <stdlib.h>
 
 #define MB (1024*1024)
 shell_status command_mapping(Command* user_command);
