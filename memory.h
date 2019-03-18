@@ -18,5 +18,6 @@ typedef struct memories {
 
 Memories* construct_memories();
 void print_memories(Memories* memories_state, int start, int end);
+void edit_memory(Memories* memories_state, int address, short value);
 
 #endif

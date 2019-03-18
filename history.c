@@ -38,9 +38,7 @@ void print_history(Histories *histories_store, char *last_command) {
     LinkedList* list = histories_store->list;
     Node** cur = &histories_store->list->head;
     int i = 0;
-//    printf("%d",histories_store->size);
     for(i=0;i<histories_store->size + 1;i++){
-//        printf("%s", (char*)(*cur)->data);
         if(i == 0){
             cur = &((*cur)->next);
             continue;

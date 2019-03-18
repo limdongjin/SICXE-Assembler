@@ -11,4 +11,5 @@ typedef struct state {
 } State;
 
 State* construct_state();
+
 #endif

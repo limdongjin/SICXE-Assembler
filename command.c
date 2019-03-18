@@ -58,7 +58,7 @@ bool exception_check_and_handling(shell_status status){
         case INVALID_COMMAND_TYPE:
             fprintf(stderr, "[ERROR] Invalid Command Type\n");
             return false;
-        case INVAID_INPUT:
+        case INVALID_INPUT:
             fprintf(stderr, "[ERROR] Invalid Input\n");
             return false;
         case INVALID_PARAMETERS:

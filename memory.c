@@ -3,8 +3,6 @@
 Memories* construct_memories(){
     Memories* virtual_memories = (Memories*)malloc(sizeof(*virtual_memories));
     virtual_memories->last_idx = -1;
-//    for(int i =0;i < 1024*1024; i++)
-//        printf("%i %hd\n",i, virtual_memories->data[i].value);
 
     return virtual_memories;
 }
@@ -18,7 +16,7 @@ void print_memories(Memories* memories_state, int start, int end){
     assert(start <= end);
     assert(start < MEMORIES_SIZE);
     assert(end < MEMORIES_SIZE);
-
+//    printf("%x %x", start, end);
     int start_row = (start / 16)*16;
     // ex, [dump 11] 에서 start 는 17이 되고, start_row 는 16이 됨.
     // ex, [dump AA] 에서 start 는 170이 되고, start_row 는 160이 됨. ( 10 == 0xA0)
@@ -45,4 +43,11 @@ void print_memories(Memories* memories_state, int start, int end){
         }
         printf("\n");
     }
+}
+
+void edit_memory(Memories* memories_state, int address, short value){
+    assert(address < MEMORIES_SIZE && address >= 0);
+    assert(value >= 0 && value <= 0xFF);
+
+    memories_state->data[address].value = value;
 }
