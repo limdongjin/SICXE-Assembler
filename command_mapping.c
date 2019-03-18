@@ -19,7 +19,7 @@ shell_status tokenizing(Command* user_command){
     assert(user_command);
     static char raw_command[COMMAND_MAX_LEN];
     char cm;
-    int i = 0, comma_cnt = 0, len_raw, flag = 0;
+    int i = 0, comma_cnt = 0, len_raw, flag = 0, flag2 = 0;
 
     strncpy (raw_command, user_command->raw_command, COMMAND_MAX_LEN);
     user_command->token_cnt = 0;
@@ -73,6 +73,24 @@ shell_status tokenizing(Command* user_command){
 
     if((int)user_command->token_cnt <= 0)
         return INVALID_INPUT;
+
+    // ex) f 1 ,, 2 3 [x]
+    // , 다음에는 [ ] [\t]이 나오다가 [ ] [\t] [,]이 아닌 값이 나와야한다.
+    flag = 0; // 콤마가 나오면 flag 는 1 로 놓자.
+    for(i=0;i<len_raw;i++){
+        cm = user_command->raw_command[i];
+        if(flag == 1){
+            if(cm == ',') return INVALID_PARAMETERS;
+            if(cm == ' ' || cm == '\t') continue;
+            flag = 0;
+            continue;
+        }
+        if(cm == ','){
+            flag = 1;
+            continue;
+        }
+    }
+
     return TOKENIZING_SUCCESS;
 }
 
