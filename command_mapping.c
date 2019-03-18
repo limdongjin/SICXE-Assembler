@@ -68,6 +68,7 @@ shell_status command_mapping_type(Command *user_command){
 }
 
 shell_status check_command_parameter(Command* user_command){
+    int tok1, tok2, i, l;
     if((user_command->type == TYPE_QUIT ||
         user_command->type == TYPE_HELP ||
         user_command->type == TYPE_HISTORY ||
@@ -87,6 +88,35 @@ shell_status check_command_parameter(Command* user_command){
         return INVALID_PARAMETERS;
     if(user_command->type == TYPE_FILL && user_command->token_cnt != 4)
         return INVALID_PARAMETERS;
+    if(user_command->type == TYPE_DUMP){
+        if(user_command->token_cnt == 2){
+            tok1 = (int)strtol(user_command->tokens[1], NULL, 16);
+            printf("dump tok: %d\n", tok1);
 
+            // 적절치 않은 문자열도 0으로 변환되기때문에 검증 필요.
+            // ex, strtok("ZA",NULL,16) => 0
+            if(tok1 == 0 && !is_zero(user_command->tokens[1]))
+                return INVALID_PARAMETERS;
+
+            return VALID_PARAMETERS;
+        }
+        tok1 = (int)strtol(user_command->tokens[1], NULL, 16);
+        tok2 = (int)strtol(user_command->tokens[2], NULL, 16);
+        printf("%d %d", tok1, tok2);
+        if(tok1 == 0 && !is_zero(user_command->tokens[1]))
+            return INVALID_PARAMETERS;
+        if(tok2 == 0 && !is_zero(user_command->tokens[2]))
+            return INVALID_PARAMETERS;
+        if(tok1 > tok2) return INVALID_PARAMETERS;
+        if(tok1 >= MB) return INVALID_PARAMETERS;
+    }
     return VALID_PARAMETERS;
+}
+bool is_zero(char* str){
+    int len = (int)strlen(str);
+    int i;
+    for(i=0;i<len;i++)
+        if(str[i] != '0')
+            return false;
+    return true;
 }

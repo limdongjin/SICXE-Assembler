@@ -3,6 +3,7 @@
 #include <sys/stat.h>
 #include "command.h"
 #include "state.h"
+
 int main() {
     // history
     // memory

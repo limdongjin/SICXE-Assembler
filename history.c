@@ -45,10 +45,10 @@ void print_history(Histories *histories_store, char *last_command) {
             cur = &((*cur)->next);
             continue;
         }
-        printf("%d: %s", i, (char*)(*cur)->data);
+        printf("%-4d %s", i, (char*)(*cur)->data);
         cur = &((*cur)->next);
 
     }
-    printf("%d: %s", i, last_command);
+    printf("%-4d %s", i, last_command);
     printf("\n");
 }

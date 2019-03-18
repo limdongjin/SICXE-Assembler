@@ -35,18 +35,17 @@ shell_status command_execute(Command *user_command, State *state_store) {
         case TYPE_OPCODELIST:
             return execute_opcodelist();
         case TYPE_DUMP:
-            return execute_dump();
+            return execute_dump(user_command, state_store->memories_state);
         default:
             break;
     }
     return EXECUTE_SUCCESS;
 }
 
-// [TODO] history 구현
 shell_status execute_history(Histories *histories_state, char *last_command) {
     assert(histories_state);
     assert(last_command);
-    printf("History!\n");
+
     print_history(histories_state, last_command);
     return EXECUTE_SUCCESS;
 }
@@ -79,9 +78,23 @@ shell_status execute_dir(){
 }
 
 // [TODO] dump 구현
-shell_status execute_dump(){
+shell_status execute_dump(Command *user_command, Memories *memories_state) {
+    assert(memories_state);
+    assert(user_command);
+    assert(user_command->token_cnt < 4);
     printf("dump! \n");
-
+    size_t token_cnt = user_command->token_cnt;
+    if(token_cnt == 1){
+        printf("tok0: %s\n", user_command->tokens[0]);
+    } else if(token_cnt == 2){
+        printf("tok0: %s\n", user_command->tokens[0]);
+        printf("tok1: %s\n", user_command->tokens[1]);
+    } else if(token_cnt == 3){
+        printf("tok0: %s\n", user_command->tokens[0]);
+        printf("tok1: %s\n", user_command->tokens[1]);
+        printf("tok2: %s\n", user_command->tokens[2]);
+    }
+//    print_memories()
     return EXECUTE_SUCCESS;
 }
 
