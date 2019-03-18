@@ -7,6 +7,14 @@ Memories* construct_memories(){
     return virtual_memories;
 }
 
+bool destroy_memories(Memories** memories_state){
+    printf("###Memory Free Start###\n");
+    printf("free %p\n", *memories_state);
+    free(*memories_state);
+    printf("###Memory Free End###\n");
+    return true;
+}
+
 void print_memories(Memories* memories_state, int start, int end){
     // start 와 end 는 10진수로 변환한 값이다.
     // ex, [dump 10 20]에서 start 는 16이고 end 는 32이다.

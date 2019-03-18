@@ -21,4 +21,5 @@ History* construct_history();
 History* construct_history_with_string(char* str);
 bool push_history(Histories* histories_store, History* target);
 void print_history(Histories *histories_store, char *last_command);
+bool destroy_histories(Histories **histories_state);
 #endif

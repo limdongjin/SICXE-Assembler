@@ -16,6 +16,7 @@ bool command_main(State* state_store){
 
         status = command_execute(&user_command, state_store);
         if(check_quit_condition(&user_command)) break;
+        if(status == EXECUTE_FAIL) continue;
 
         push_history(state_store->histories_state,
                 construct_history_with_string(user_command.raw_command));

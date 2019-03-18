@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <stdbool.h>
+
 typedef struct memory {
     short value;
 } Memory;
@@ -18,5 +20,6 @@ typedef struct memories {
 Memories* construct_memories();
 void print_memories(Memories* memories_state, int start, int end);
 void edit_memory(Memories* memories_state, int address, short value);
+bool destroy_memories(Memories** memories_state);
 
 #endif

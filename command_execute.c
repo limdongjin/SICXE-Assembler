@@ -52,16 +52,15 @@ void execute_help(){
             "opcodelist\n");
 }
 
-// [TODO] quit 할때 free 처리
 shell_status execute_quit(){
     fprintf(stdout, "Bye :)\n");
+
     return QUIT;
 }
 
-// [TODO] dir 구현
+// [TODO] dir 구현 완료!!!
 shell_status execute_dir(){
-    printf("dir!\n");
-
+    if(!print_dir()) return EXECUTE_FAIL;
     return EXECUTE_SUCCESS;
 }
 

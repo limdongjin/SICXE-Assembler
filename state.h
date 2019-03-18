@@ -11,5 +11,6 @@ typedef struct state {
 } State;
 
 State* construct_state();
+bool destroy_state(State **state_store);
 
 #endif

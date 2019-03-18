@@ -4,6 +4,7 @@
 #include "command_macro.h"
 #include "command_objects.h"
 #include "state.h"
+#include "dir.h"
 
 //#define IS_TYPE(T) (user_command->type == (T))
 shell_status command_execute(Command *user_command, State *state_store);
