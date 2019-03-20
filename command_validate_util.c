@@ -101,12 +101,11 @@ shell_status validate_dump_parameters(Command *user_command){
     return VALID_PARAMETERS;
 }
 
-// [TODO] opcode 파라미터 검증 구현
 shell_status validate_opcode_parameters(Command *user_command){
     assert(user_command);
     assert(user_command->type == TYPE_OPCODE);
     if(user_command->token_cnt != 2) return INVALID_PARAMETERS;
-    if(strlen(user_command->tokens[1]) > 10) return INVALID_PARAMETERS;
+    if(strlen(user_command->tokens[1]) > 14) return INVALID_PARAMETERS;
 
     return VALID_PARAMETERS;
 }

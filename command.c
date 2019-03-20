@@ -6,7 +6,7 @@ bool command_main(State* state_store){
 
     while (1){
 
-        printf("sicsim > ");
+        render_shell();
 
         status = read_input(&user_command.raw_command);
         if(!exception_check_and_handling(status)) continue;
@@ -19,8 +19,6 @@ bool command_main(State* state_store){
         if(!exception_check_and_handling(status)) continue;
         if(status == EXECUTE_FAIL) continue;
         add_history(state_store, user_command.raw_command);
-//        push_history(state_store->histories_state,
-//                construct_history_with_string(user_command.raw_command));
     }
     return true;
 }

@@ -131,11 +131,8 @@ shell_status execute_reset(Memories *memories_state) {
     return EXECUTE_SUCCESS;
 }
 
-// [TODO] opcode 구현
 shell_status execute_opcode(Command* user_command, State* state_store){
-//    printf("opcode! \n");
     assert(user_command->token_cnt == 2);
-//    print_opcodes(state_store->opcode_table_state);
     Opcode* opc = find_opcode_by_name(state_store->opcode_table_state, user_command->tokens[1]);
 
     if(!opc) return EXECUTE_FAIL;
@@ -145,9 +142,7 @@ shell_status execute_opcode(Command* user_command, State* state_store){
     return EXECUTE_SUCCESS;
 }
 
-// [TODO] opcodelist 구현
 shell_status execute_opcodelist(State* state_store){
-    printf("opcodelist! \n");
     print_opcodes(state_store->opcode_table_state);
     return EXECUTE_SUCCESS;
 }

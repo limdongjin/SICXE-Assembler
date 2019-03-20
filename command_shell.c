@@ -7,3 +7,6 @@ shell_status read_input(char** target){
     *target = input;
     return INPUT_READ_SUCCESS;
 }
+void render_shell(){
+    printf("sicsim > ");
+}

@@ -1,16 +1,9 @@
 #include "opcode.h"
 
-// [TODO] opcode 생성자 구현
 Opcode* construct_opcode(){
-//    Opcode* op = (Opcode*)malloc(sizeof(Opcode*));
     Opcode* op = (Opcode*)malloc(sizeof(Opcode));
     op->value = -1;
     return op;
-}
-
-// [TODO] opcode 소멸자 구현
-bool destroy_opcode(Opcode** opc){
-    assert(opc);
 }
 
 struct op_node* construct_opnode(){
@@ -19,7 +12,6 @@ struct op_node* construct_opnode(){
     return node;
 }
 
-// [TODO] opcode_table 생성자 구현
 OpcodeTable* construct_opcode_table(){
     OpcodeTable* table = (OpcodeTable*)malloc(sizeof(OpcodeTable));
     table->list = (OpLinkedList**)malloc(sizeof(OpLinkedList*)*20);
@@ -57,6 +49,10 @@ bool build_opcode_table(OpcodeTable* table){
         strncpy(opc->mnemonic_name, name, 10);
 
         opc->value = value;
+        if(opc->value > 0xFF) {
+            fprintf(stderr, "[ERROR] %X %6s %5s is Invalid Input!\n", value, name, format_name);
+            continue;
+        }
 //        printf("%s %d\n", opc->mnemonic_name,opc->value);
         if(COMPARE_STRING(format_name, "1")){
             opc->format = OP_FORMAT_1;
@@ -108,9 +104,10 @@ bool destroy_opcode_table(OpcodeTable** table){
     }
     printf("free %p\n", *table);
     free(*table);
+
+    return true;
 }
 
-// [TODO] opcode 삽입 함수 구현
 bool insert_opcode(OpcodeTable* table, Opcode* opc){
     OpNode* op_node = construct_opnode();
 
@@ -131,7 +128,7 @@ bool insert_opcode(OpcodeTable* table, Opcode* opc){
 }
 
 Opcode* find_opcode_by_name(OpcodeTable* table, char* name){
-    assert(strlen(name) <= 10);
+    assert(strlen(name) <= 14);
     assert(table);
 
     int hash = (int)hash_string(name, table->size);
@@ -167,7 +164,7 @@ void print_opcodes(OpcodeTable* table){
                 cur=&((*cur)->next);
                 continue;
             }
-            printf("[%s,%X] ",opc->mnemonic_name,opc->value);
+            printf("[%s,%02X] ",opc->mnemonic_name,opc->value);
 //            printf("gogo %s %d\n", opc->mnemonic_name, opc->value);
 //            cnt += 1;
             if(j != table->list[i]->size)

@@ -7,5 +7,6 @@
 #include <stdio.h>
 
 shell_status read_input(char** target);
+void render_shell();
 
 #endif

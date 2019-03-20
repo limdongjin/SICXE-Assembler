@@ -2,7 +2,7 @@
 
 State* construct_state(){
     State* state_obj = (State*)malloc(sizeof(*state_obj));
-    int cnt = 0;
+//    int cnt = 0;
     state_obj->histories_state = construct_histories();
     state_obj->memories_state = construct_memories();
 
