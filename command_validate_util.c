@@ -78,7 +78,6 @@ shell_status validate_parameters(Command *user_command){
     return VALID_PARAMETERS;
 }
 
-// [TODO] dump 파라미터 검증 함수 구현은 일단 완료했는데, 테스트 해보자....
 shell_status validate_dump_parameters(Command *user_command){
     assert(user_command);
     assert(user_command->type == TYPE_DUMP);
@@ -112,7 +111,6 @@ shell_status validate_opcode_parameters(Command *user_command){
     return VALID_PARAMETERS;
 }
 
-// [TODO] edit parameter 검증 구현 완료!
 shell_status validate_edit_parameters(Command *user_command){
     assert(user_command);
     assert(user_command->type == TYPE_EDIT);
@@ -133,7 +131,6 @@ shell_status validate_edit_parameters(Command *user_command){
     return VALID_PARAMETERS;
 }
 
-// [TODO] fill 파라미터 검증 구현 완료!!!
 shell_status validate_fill_parameters(Command *user_command){
     assert(user_command);
     assert(user_command->type == TYPE_FILL);

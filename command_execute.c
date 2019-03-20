@@ -58,13 +58,11 @@ shell_status execute_quit(){
     return QUIT;
 }
 
-// [TODO] dir 구현 완료!!!
 shell_status execute_dir(){
     if(!print_dir()) return EXECUTE_FAIL;
     return EXECUTE_SUCCESS;
 }
 
-// [TODO] dump 구현 완료!! 테스트 해보자..
 shell_status execute_dump(Command *user_command, Memories *memories_state) {
     assert(memories_state);
     assert(user_command);
@@ -92,7 +90,6 @@ shell_status execute_dump(Command *user_command, Memories *memories_state) {
     return EXECUTE_SUCCESS;
 }
 
-// [TODO] edit 구현 완료!! 테스트 진행해보자.
 shell_status execute_edit(Command *user_command, Memories *memories_state) {
     assert(user_command);
     assert(memories_state);
@@ -107,7 +104,6 @@ shell_status execute_edit(Command *user_command, Memories *memories_state) {
     return EXECUTE_SUCCESS;
 }
 
-// [TODO] fill 구현 완료!! 테스트 진행 필요
 shell_status execute_fill(Command *user_command, Memories *memories_state) {
     assert(user_command);
     assert(memories_state);
@@ -124,7 +120,6 @@ shell_status execute_fill(Command *user_command, Memories *memories_state) {
     return EXECUTE_SUCCESS;
 }
 
-// [TODO] reset 구현 완료!!!
 shell_status execute_reset(Memories *memories_state) {
     assert(memories_state);
 
