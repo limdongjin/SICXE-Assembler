@@ -8,7 +8,7 @@ shell_status command_execute(Command *user_command, State *state_store) {
             execute_help();
             return EXECUTE_SUCCESS;
         case TYPE_HISTORY:
-            return execute_history(state_store->histories_state, user_command->raw_command);
+            return execute_history(state_store, user_command->raw_command);
         case TYPE_QUIT:
             return execute_quit();
         case TYPE_DIR:
@@ -20,9 +20,9 @@ shell_status command_execute(Command *user_command, State *state_store) {
         case TYPE_RESET:
             return execute_reset(state_store->memories_state);
         case TYPE_OPCODE:
-            return execute_opcode();
+            return execute_opcode(user_command, state_store);
         case TYPE_OPCODELIST:
-            return execute_opcodelist();
+            return execute_opcodelist(state_store);
         case TYPE_DUMP:
             return execute_dump(user_command, state_store->memories_state);
         default:
@@ -31,11 +31,12 @@ shell_status command_execute(Command *user_command, State *state_store) {
     return EXECUTE_SUCCESS;
 }
 
-shell_status execute_history(Histories *histories_state, char *last_command) {
-    assert(histories_state);
+shell_status execute_history(State* state_store, char *last_command) {
+    assert(state_store);
     assert(last_command);
 
-    print_history(histories_state, last_command);
+    print_histories_state(state_store, last_command);
+
     return EXECUTE_SUCCESS;
 }
 
@@ -100,7 +101,7 @@ shell_status execute_edit(Command *user_command, Memories *memories_state) {
     short value = (short)strtol(user_command->tokens[2], NULL, 16);
 
     edit_memory(memories_state, addr, value);
-
+//    update_memories_state()
     return EXECUTE_SUCCESS;
 }
 
@@ -131,15 +132,22 @@ shell_status execute_reset(Memories *memories_state) {
 }
 
 // [TODO] opcode 구현
-shell_status execute_opcode(){
-    printf("opcode! \n");
+shell_status execute_opcode(Command* user_command, State* state_store){
+//    printf("opcode! \n");
+    assert(user_command->token_cnt == 2);
+//    print_opcodes(state_store->opcode_table_state);
+    Opcode* opc = find_opcode_by_name(state_store->opcode_table_state, user_command->tokens[1]);
+
+    if(!opc) return EXECUTE_FAIL;
+
+    fprintf(stdout, "opcode is %X\n", opc->value);
 
     return EXECUTE_SUCCESS;
 }
 
 // [TODO] opcodelist 구현
-shell_status execute_opcodelist(){
+shell_status execute_opcodelist(State* state_store){
     printf("opcodelist! \n");
-
+    print_opcodes(state_store->opcode_table_state);
     return EXECUTE_SUCCESS;
 }

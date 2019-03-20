@@ -16,10 +16,11 @@ bool command_main(State* state_store){
 
         status = command_execute(&user_command, state_store);
         if(check_quit_condition(&user_command)) break;
+        if(!exception_check_and_handling(status)) continue;
         if(status == EXECUTE_FAIL) continue;
-
-        push_history(state_store->histories_state,
-                construct_history_with_string(user_command.raw_command));
+        add_history(state_store, user_command.raw_command);
+//        push_history(state_store->histories_state,
+//                construct_history_with_string(user_command.raw_command));
     }
     return true;
 }
@@ -53,8 +54,11 @@ bool exception_check_and_handling(shell_status status){
             fprintf(stderr, "[ERROR] Invalid Parameters\n");
             return false;
         case MISSING_REQUIRE_PARAMETER:
-            fprintf(stderr, "[ERROR] Missing Required Parameter");
+            fprintf(stderr, "[ERROR] Missing Required Parameter\n");
             return false;
+        case EXECUTE_FAIL:
+            fprintf(stderr, "[ERROR] Invalid Input\n");
+            break;
         default:
             break;
     }

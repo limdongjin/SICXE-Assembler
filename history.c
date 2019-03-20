@@ -3,11 +3,18 @@
 Histories* construct_histories(){
     Histories* hists = (Histories*)malloc(sizeof(*hists));
 
-    hists->list = construct_linked_list();
+    hists->list = (HistoryList*)malloc(sizeof(HistoryList));
+    hists->list->head = (HistoryNode*)malloc(sizeof(HistoryNode));
+    hists->list->tail = (HistoryNode*)malloc(sizeof(HistoryNode));
+    hists->list->head->prev = NULL;
+    hists->list->head->next = hists->list->tail;
+    hists->list->tail->prev = hists->list->head;
+    hists->list->tail->next = NULL;
+
     hists->list->head->data = construct_history();
     hists->list->tail->data = construct_history();
-    hists->size = 0;
 
+    hists->size = 0;
     return hists;
 }
 
@@ -18,11 +25,10 @@ History* construct_history(){
 }
 
 bool destroy_histories(Histories **histories_state){
-    Node *cur;
+    HistoryNode *cur;
     int i;
     cur = ((*histories_state)->list->head);
     printf("###History Free Start###\n");
-
     for(i=0;i<(*histories_state)->size + 1;i++){
         printf("free %p\n", (*histories_state)->list->head->data);
         printf("free %p\n", (*histories_state)->list->head);
@@ -60,9 +66,15 @@ bool push_history(Histories* histories_store, History* target){
     assert(histories_store->list);
     assert(histories_store->list->head);
     assert(histories_store->list->tail);
-    Node* hist_node = construct_node(NODE_SIZE);
+    HistoryNode* hist_node = (HistoryNode*)malloc(sizeof(HistoryNode));
     hist_node->data = target;
-    append_to_linked_list(histories_store->list, hist_node);
+
+    hist_node->prev = histories_store->list->tail->prev;
+    hist_node->next = histories_store->list->tail;
+    histories_store->list->tail->prev->next = hist_node;
+    histories_store->list->tail->prev = hist_node;
+    histories_store->list->size += 1;
+
     histories_store->size += 1;
     return true;
 }
@@ -74,7 +86,7 @@ void print_history(Histories *histories_store, char *last_command) {
     assert(histories_store->list->head);
     assert(histories_store->list->tail);
 //    LinkedList* list = histories_store->list;
-    Node** cur = &histories_store->list->head;
+    HistoryNode** cur = &histories_store->list->head;
     int i = 0;
     for(i=0;i<histories_store->size + 1;i++){
         if(i == 0){
