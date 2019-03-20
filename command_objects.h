@@ -1,6 +1,7 @@
 #ifndef __COMMAND_OBJECTS_H__
 #define __COMMAND_OBJECTS_H__
 #include <sys/types.h>
+#define TOKEN_MAX_NUM 30
 
 enum shell_command_type{
     TYPE_HELP, TYPE_DIR, TYPE_QUIT, TYPE_HISTORY,
