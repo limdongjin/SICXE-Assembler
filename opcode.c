@@ -102,23 +102,19 @@ bool destroy_opcode_table(OpcodeTable** table){
     OpNode *next;
     OpLinkedList** list;
     int i, j;
-    printf("###OpcodeTable Free###");
+
     list = (*table)->list;
     for(i=0;i<(*table)->size;i++){
         cur = list[i]->head;
 
         for(j=0;j<list[i]->size+1;j++){
             next = cur->next;
-            printf("free %p\n", (cur->data));
-            printf("free %p\n", (cur));
             free(cur->data);
             free(cur);
             cur = next;
         }
-        printf("free %p\n", (list[i]));
         free(list[i]);
     }
-    printf("free %p\n", *table);
     free(*table);
 
     return true;
@@ -132,8 +128,6 @@ bool insert_opcode(OpcodeTable* table, Opcode* opc){
 
     op_node->data = opc;
     int hash = (int)hash_string(opc->mnemonic_name, 20);
-//    assert(hash >= 0);
-//    assert(hash < 20);
 
     op_node->prev = table->list[hash]->tail->prev;
     op_node->next = table->list[hash]->tail;

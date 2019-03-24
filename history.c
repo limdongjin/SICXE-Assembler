@@ -37,28 +37,20 @@ bool destroy_histories(Histories **histories_state){
     HistoryNode *cur;
     int i;
     cur = ((*histories_state)->list->head);
-    printf("###History Free Start###\n");
     for(i=0;i<(*histories_state)->size + 1;i++){
-        printf("free %p\n", (*histories_state)->list->head->data);
-        printf("free %p\n", (*histories_state)->list->head);
         cur = (*histories_state)->list->head;
         (*histories_state)->list->head = (*histories_state)->list->head->next;
         free(cur->data);
         free(cur);
     }
 
-    printf("free %p\n", (*histories_state)->list->tail);
-    printf("free %p\n", (*histories_state)->list->tail->data);
     free((*histories_state)->list->tail->data);
     free((*histories_state)->list->tail);
 
-    printf("free %p\n", (*histories_state)->list);
     free((*histories_state)->list);
 
-    printf("free %p\n", (*histories_state));
     free((*histories_state));
 
-    printf("###History Free End###\n\n");
     return true;
 }
 

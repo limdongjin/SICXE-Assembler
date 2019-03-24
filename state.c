@@ -19,16 +19,13 @@ State* construct_state(){
  * state_store 가 동적 할당한 모든 메모리를 해제한다.
  */
 bool destroy_state(State **state_store){
-    printf("########## State Free Start ##################\n");
 
     destroy_histories(&((*state_store)->histories_state));
     destroy_memories(&((*state_store)->memories_state));
     destroy_opcode_table(&(*state_store)->opcode_table_state);
 
-    printf("free %p\n", *state_store);
     free(*state_store);
 
-    printf("########## State Free End ####################\n");
     return true;
 }
 
