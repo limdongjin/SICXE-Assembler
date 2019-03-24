@@ -1,17 +1,26 @@
 #include "opcode.h"
 
+/*
+ * Opcode 구조체를 생성(할당)한다.
+ */
 Opcode* construct_opcode(){
     Opcode* op = (Opcode*)malloc(sizeof(Opcode));
     op->value = -1;
     return op;
 }
 
+/*
+ * op_node 를 생성(할당)한다.
+ */
 struct op_node* construct_opnode(){
     struct op_node* node = (struct op_node*)malloc(sizeof(struct op_node));
 
     return node;
 }
 
+/*
+ * OpcodeTable 을 생성(할당)한다.
+ */
 OpcodeTable* construct_opcode_table(){
     OpcodeTable* table = (OpcodeTable*)malloc(sizeof(OpcodeTable));
     table->list = (OpLinkedList**)malloc(sizeof(OpLinkedList*)*20);
@@ -32,6 +41,10 @@ OpcodeTable* construct_opcode_table(){
     table->size = 20;
     return table;
 }
+
+/*
+ * opcode 파일을 읽어서 OpcodeTable 에 적절히 저장한다
+ */
 bool build_opcode_table(OpcodeTable* table){
     FILE* fp = fopen("opcode.txt", "rt");
     if(!fp) {
@@ -80,6 +93,9 @@ bool build_opcode_table(OpcodeTable* table){
     return true;
 }
 
+/*
+ * OpcodeTable 을 해제한다.
+ */
 bool destroy_opcode_table(OpcodeTable** table){
     assert(table);
     OpNode *cur;
@@ -108,6 +124,9 @@ bool destroy_opcode_table(OpcodeTable** table){
     return true;
 }
 
+/*
+ * OpcodeTable 에 Opcode 를 추가한다.
+ */
 bool insert_opcode(OpcodeTable* table, Opcode* opc){
     OpNode* op_node = construct_opnode();
 
@@ -127,6 +146,10 @@ bool insert_opcode(OpcodeTable* table, Opcode* opc){
     return true;
 }
 
+/*
+ * OpcodeTable 에서 name 문자열 이름의 mnemonic 을 가진
+ * Opcode 를 찾고 리턴한다.
+ */
 Opcode* find_opcode_by_name(OpcodeTable* table, char* name){
     assert(strlen(name) <= 14);
     assert(table);
@@ -151,6 +174,9 @@ Opcode* find_opcode_by_name(OpcodeTable* table, char* name){
     return NULL;
 }
 
+/*
+ * OpcodeTable 에 저장된 opcode 목록을 출력한다.
+ */
 void print_opcodes(OpcodeTable* table){
     int size = table->size;
     for(int i = 0;i < size;i++){

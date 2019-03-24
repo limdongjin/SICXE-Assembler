@@ -1,5 +1,8 @@
 #include "memory.h"
 
+/*
+ * Memories 구조체를 생성(할당)한다.
+ */
 Memories* construct_memories(){
     Memories* virtual_memories = (Memories*)malloc(sizeof(*virtual_memories));
     virtual_memories->last_idx = -1;
@@ -7,6 +10,9 @@ Memories* construct_memories(){
     return virtual_memories;
 }
 
+/*
+ * Memories 구조체를 생성하면서 할당했던 메모리를 해제한다.
+ */
 bool destroy_memories(Memories** memories_state){
     printf("###Memory Free Start###\n");
     printf("free %p\n", *memories_state);
@@ -15,9 +21,11 @@ bool destroy_memories(Memories** memories_state){
     return true;
 }
 
+/*
+ * start ~ end 메모리 영역을 출력한다.
+ * start 와 end 는 10진수로 변환한 값이다.
+ */
 void print_memories(Memories* memories_state, int start, int end){
-    // start 와 end 는 10진수로 변환한 값이다.
-    // ex, [dump 10 20]에서 start 는 16이고 end 는 32이다.
     assert(memories_state);
     assert(start >= 0);
     assert(end >= 0);
@@ -53,6 +61,9 @@ void print_memories(Memories* memories_state, int start, int end){
     }
 }
 
+/*
+ * 메모리 영역의 address 주소의 값을 value 로 수정한다.
+ */
 void edit_memory(Memories* memories_state, int address, short value){
     assert(address < MEMORIES_SIZE && address >= 0);
     assert(value >= 0 && value <= 0xFF);

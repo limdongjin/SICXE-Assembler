@@ -1,5 +1,8 @@
 #include "util.h"
 
+/*
+ * hashtable 구현을 위한 hash function
+ */
 size_t hash_string (char *str, int hash_size){
     int32_t hash = 2829;
     int32_t c;
@@ -11,6 +14,11 @@ size_t hash_string (char *str, int hash_size){
     return res;
 }
 
+/*
+ * 문자열 str 이 0으로 변환될수있는지 확인한다.
+ * ex, is_zero_str("0000") => return true
+ * ex, is_zero_str("A00") => return false
+ */
 bool is_zero_str(char* str){
     assert(str);
     int len = (int)strlen(str);
@@ -21,6 +29,11 @@ bool is_zero_str(char* str){
     return true;
 }
 
+/*
+ * 문자열 str 이 16 진수인지 확인한다.
+ * ex, is_valid_hex("00F1") => return true
+ * ex2, is_valid_hex("FZ") => return false
+ */
 bool is_valid_hex(char* str){
     assert(str);
     int l = (int)strlen(str), i;
@@ -39,6 +52,12 @@ bool is_valid_hex(char* str){
     return true;
 }
 
+
+/*
+ * 문자열 str 이 [0 ~ max_size-1] 범위의 적절한 주소값인지 확인한다.
+ * ex, is_zero_str("00F", 100) => return true
+ * ex, is_zero_str("FG", 100000) => return false
+ */
 bool is_valid_address(char *str, int max_size) {
     assert(str);
     assert(max_size);
