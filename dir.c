@@ -26,12 +26,12 @@ bool print_dir(){
         else format = "%s ";
 
         sprintf(path, format, ent->d_name);
-        printf("%-25s", path);
+        printf("%-20s", path);
 
-        if(++i % 6 == 0) printf("\n");
+        if(++i % 5 == 0) printf("\n");
         ent = readdir(dir);
     }
-    if (i % 6 != 0) printf ("\n");
+    if (i % 5 != 0) printf ("\n");
     closedir(dir);
     return true;
 }
