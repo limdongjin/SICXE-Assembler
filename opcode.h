@@ -5,7 +5,7 @@
 #include "util.h"
 
 /*
- * opcode 의 format 을 enum 으로 표현한다.
+ * opcode 의 format 을 enum 으로 표현한다. (구현중)
  */
 enum op_format {
     OP_FORMAT_1,
@@ -63,11 +63,6 @@ typedef struct opcode_table {
  * Opcode 구조체를 생성(할당)한다.
  */
 Opcode* construct_opcode();
-
-/*
- * Opcode 구조체를 해제한다.
- */
-bool destroy_opcode(Opcode** opc);
 
 /*
  * op_node 를 생성(할당)한다.
