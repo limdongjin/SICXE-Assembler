@@ -7,7 +7,7 @@
 enum shell_command_type{
     TYPE_HELP, TYPE_DIR, TYPE_QUIT, TYPE_HISTORY,
     TYPE_DUMP, TYPE_EDIT, TYPE_FILL, TYPE_RESET,
-    TYPE_OPCODE, TYPE_OPCODELIST
+    TYPE_OPCODE, TYPE_OPCODELIST, TYPE_ASSEMBLE
 };
 
 // command 를 구조체로 구조화 하여 표현.

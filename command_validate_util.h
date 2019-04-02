@@ -53,4 +53,7 @@ shell_status validate_edit_parameters(Command *user_command);
  */
 shell_status validate_fill_parameters(Command *user_command);
 
+shell_status validate_assemble_parameters(Command *user_command);
+
+
 #endif

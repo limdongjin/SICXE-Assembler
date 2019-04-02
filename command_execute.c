@@ -30,6 +30,8 @@ shell_status command_execute(Command *user_command, State *state_store) {
             return execute_opcodelist(state_store);
         case TYPE_DUMP:
             return execute_dump(user_command, state_store->memories_state);
+        case TYPE_ASSEMBLE:
+            return execute_assemble(user_command, state_store);
         default:
             break;
     }
@@ -212,4 +214,18 @@ shell_status execute_opcode(Command* user_command, State* state_store){
 shell_status execute_opcodelist(State* state_store){
     print_opcodes(state_store->opcode_table_state);
     return EXECUTE_SUCCESS;
+}
+
+/*
+ *  assemble 명령어
+ *  ex.
+ *      assemble filename
+ */
+shell_status execute_assemble(Command *user_command, State* state_store){
+    assert(user_command->token_cnt == 2);
+
+    if(assemble_file(state_store, user_command->tokens[1]))
+        return EXECUTE_SUCCESS;
+    else
+        return EXECUTE_FAIL;
 }

@@ -78,4 +78,9 @@ shell_status execute_opcode(Command *user_command, State* state_store);
  */
 shell_status execute_opcodelist(State* state_store);
 
+/*
+ *  assemble 명령어
+ */
+shell_status execute_assemble(Command *user_command, State* state_store);
+
 #endif

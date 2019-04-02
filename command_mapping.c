@@ -88,7 +88,10 @@ shell_status command_mapping_type(Command *user_command){
         user_command->type = TYPE_OPCODE;
     } else if(COMPARE_STRING(first_token, "opcodelist")){
         user_command->type = TYPE_OPCODELIST;
-    } else {
+    } else if(COMPARE_STRING(first_token, "assemble")){
+        user_command->type = TYPE_ASSEMBLE;
+    }
+    else {
         return INVALID_COMMAND_TYPE;
     }
     return VALID_COMMAND_TYPE;

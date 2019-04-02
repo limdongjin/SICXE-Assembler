@@ -4,7 +4,10 @@
 #include "history.h"
 #include "memory.h"
 #include "opcode.h"
+#include "symbol.h"
 #include <stdlib.h>
+
+#define MAX_ASM_FILENAME_LENGTH 300
 
 /*
  * state 구조체에서는 명령어 히스토리, 가상 메모리 영역, Opcode 정보를 저장하는
@@ -19,6 +22,9 @@ typedef struct state {
 
     // opcode 파일을 읽어 들인 내용들
     OpcodeTable* opcode_table_state;
+
+    // symbol 정보 저장
+    SymbolTable* symbol_table_state;
 } State;
 
 /*
@@ -40,5 +46,12 @@ bool add_history(State *state_store, char* history_str);
  * 명령어 히스토리를 출력한다.
  */
 void print_histories_state(State* state_store, char* last_command);
+
+/*
+ * file을 assemble 하여 state 변경 및 성공 오류 여부 리턴
+ */
+bool assemble_file(State* state_store, char* file_name);
+
+bool assemble_pass1(State* state_store, char* asm_file_name);
 
 #endif

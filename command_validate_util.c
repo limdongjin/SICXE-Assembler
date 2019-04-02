@@ -114,7 +114,8 @@ shell_status validate_parameters(Command *user_command){
         return validate_fill_parameters(user_command);
     if(user_command->type == TYPE_DUMP)
         return validate_dump_parameters(user_command);
-
+    if(user_command->type == TYPE_ASSEMBLE)
+        return validate_assemble_parameters(user_command);
     return VALID_PARAMETERS;
 }
 
@@ -221,6 +222,21 @@ shell_status validate_fill_parameters(Command *user_command){
     if(!is_valid_hex(user_command->tokens[3]))
         return INVALID_PARAMETERS;
     if(!(0 <= value && value <= 0xFF)) return INVALID_PARAMETERS;
+
+    return VALID_PARAMETERS;
+}
+
+/*
+ * assemble 명령어의 파라미터를 검증한다.
+ *
+ * @return VALID_PARAMETERS or INVALID_PARAMETERS
+ */
+shell_status validate_assemble_parameters(Command *user_command){
+    assert(user_command);
+    assert(user_command->type == TYPE_ASSEMBLE);
+
+    if(user_command->token_cnt != 2)
+        return INVALID_PARAMETERS;
 
     return VALID_PARAMETERS;
 }
