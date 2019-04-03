@@ -147,15 +147,28 @@ bool insert_opcode(OpcodeTable* table, Opcode* opc){
 Opcode* find_opcode_by_name(OpcodeTable* table, char* name){
     assert(strlen(name) <= 14);
     assert(table);
-
     int hash = (int)hash_string(name, table->size);
     int i = 0;
     OpNode** cur = &(table->list[hash]->head);
     Opcode* opc;
-//    printf("hash: %d\n", hash);
+
+    // DEFAULT OPCODE
+    if(COMPARE_STRING(name, "START")
+        || COMPARE_STRING(name, "END")
+        || COMPARE_STRING(name, "BYTE")
+        || COMPARE_STRING(name, "WORD")
+        || COMPARE_STRING(name, "RESB")
+        || COMPARE_STRING(name, "RESW")
+        || COMPARE_STRING(name, "BASE")
+        || COMPARE_STRING(name, "NOBASE")){
+        opc = construct_opcode();
+        strncpy(opc->mnemonic_name, name, 10);
+        opc->value = 0;
+        return opc;
+    }
+
     for(i=0;i<(table->list[hash]->size)+1;i++){
         opc = (*cur)->data;
-//        printf("op-name: %s\n", opc->mnemonic_name);
         if(opc->value == -1){
             cur = &((*cur)->next);
             continue;

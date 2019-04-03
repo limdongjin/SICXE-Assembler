@@ -9,11 +9,12 @@
 typedef struct statement {
     char* raw_input;
     int token_cnt;
-    char tokens*[MAX_TOKENS_LENGTH];
+    char* tokens[MAX_TOKENS_LENGTH];
     bool comment;
     Opcode* opcode;
     char* raw_symbol;
     bool tmp_bool;
+    bool plus;
 }Statement;
 
 #endif

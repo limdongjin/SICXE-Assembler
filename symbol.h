@@ -6,6 +6,7 @@
 
 typedef struct symbol {
     char label[11];
+    int location_counter;
 }Symbol;
 
 /*

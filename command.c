@@ -72,7 +72,7 @@ bool exception_check_and_handling(shell_status status){
             fprintf(stderr, "[ERROR] Missing Required Parameter\n");
             return false;
         case EXECUTE_FAIL:
-            fprintf(stderr, "[ERROR] Invalid Input\n");
+            fprintf(stderr, "[ERROR] Execute Fail!\n");
             break;
         default:
             break;

@@ -5,6 +5,7 @@
 #include "memory.h"
 #include "opcode.h"
 #include "symbol.h"
+#include "assemble.h"
 #include <stdlib.h>
 
 #define MAX_ASM_FILENAME_LENGTH 300
@@ -50,8 +51,41 @@ void print_histories_state(State* state_store, char* last_command);
 /*
  * file을 assemble 하여 state 변경 및 성공 오류 여부 리턴
  */
-bool assemble_file(State* state_store, char* file_name);
+bool assemble_file(State *state_store, char *asm_file_name);
 
-bool assemble_pass1(State* state_store, char* asm_file_name);
+char* before_dot(char* name);
+char *concat_n(char *name, char *name2, int max_size);
+
+/* PASS1 */
+bool assemble_pass1(State *state_store, char *asm_file_name);
+
+bool
+generate_statement(State *state_store, FILE *asm_fp, FILE *tmp_fp, Statement *stmt, bool is_tmp, int *location_counter,
+                   int *stmt_size);
+
+bool symbolizing_by_name(State *state_store, Statement *stmt, char *name);
+
+bool tokenizing_stmt_tokens(Statement* stmt, char* input);
+
+bool is_comment_stmt(Statement* stmt);
+
+bool mark_comment_stmt(Statement* stmt);
+
+bool is_plus_stmt(Statement *stmt, int str_idx);
+
+bool mark_plus_true_or_false(Statement *stmt, int str_idx);
+
+void update_location_counter_by_format(Statement *stmt, int *old_location_counter);
+
+bool update_location_counter_by_mnemonic_name(Statement *stmt, int *old_location_counter);
+
+bool update_location_counter_by_plus_and_format(Statement *stmt, int *old_location_counter);
+
+bool is_end_condition(Statement *stmt, FILE *asm_fp);
+
+bool error_handling_pass1(FILE* asm_fp, FILE* tmp_fp, char* tmp_fname, int line_num);
+
+/* PASS2 */
+bool assemble_pass2(State *state_store, char *asm_file_name);
 
 #endif
