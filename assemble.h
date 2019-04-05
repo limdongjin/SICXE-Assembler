@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include "opcode.h"
 #include "symbol.h"
+#include <stdint.h>
 
 #define MAX_TOKENS_LENGTH 8
 

@@ -8,6 +8,7 @@
 #include "assemble.h"
 #include "util.h"
 #include <stdlib.h>
+#include <stdint.h>
 
 #define MAX_ASM_FILENAME_LENGTH 300
 
