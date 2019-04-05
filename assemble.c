@@ -490,8 +490,8 @@ bool is_end_condition(Statement *stmt, FILE *fp) {
 }
 
 bool
-error_handling_pass1or2(FILE *fp1, FILE *fp2, FILE *fp3, char *rm_file_name1, char *rm_file_name2, char *rm_file_name3,
-                        int line_num) {
+error_handling_pass1or2(Statement *stmt, FILE *fp1, FILE *fp2, FILE *fp3, char *rm_file_name1, char *rm_file_name2,
+                        char *rm_file_name3, int line_num) {
     if(fp1) fclose(fp1);
     if(fp2) fclose(fp2);
     if(fp3) fclose(fp3);
@@ -500,8 +500,9 @@ error_handling_pass1or2(FILE *fp1, FILE *fp2, FILE *fp3, char *rm_file_name1, ch
     if(rm_file_name2) remove(rm_file_name2);
     if(rm_file_name3) remove(rm_file_name3);
 
-    if(line_num != -1)
-        fprintf(stderr, "[ERROR] line: %d\n", line_num);
+    if(line_num != -1 && stmt && stmt->raw_input) {
+        fprintf(stderr, "[ERROR] Line %d: %s \n", line_num + 5, stmt->raw_input);
+    }
 
     return true;
 }
@@ -554,10 +555,13 @@ bool read_statement(OpcodeTable *opcode_table,
     if(is_tmp) fp = tmp_fp;
     else fp = asm_fp;
 
-    if(!fgets(raw_input, 220, fp)) return false;
+    if(!fgets(raw_input, 220, fp)){
+//        fprintf(stderr,"[DEBUG]");
+        return false;
+    }
 
     length = strlen(raw_input);
-    if(raw_input[length - 1] != '\n') return false;
+    if(!feof(fp) && raw_input[length - 1] != '\n') return false;
 
     raw_input[length - 1] = '\0';
 

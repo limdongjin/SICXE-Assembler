@@ -239,14 +239,14 @@ shell_status execute_type(Command* user_command){
     if(!user_command->tokens[1])
         return EXECUTE_FAIL;
     FILE* fp = fopen(user_command->tokens[1], "rt");
-    char buf[1000];
+    char buf[10000];
     if(!fp){
         fprintf(stderr, "[ERROR] Can't Open File\n");
         return EXECUTE_FAIL;
     }
     while (fgets (buf, sizeof(buf), fp))
         fputs (buf, stdout);
-
+    fputs("\n", stdout);
     fclose(fp);
     return EXECUTE_SUCCESS;
 }

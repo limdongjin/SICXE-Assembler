@@ -72,30 +72,33 @@ bool assemble_file(State *state_store, char *asm_file_name){
 
 bool assemble_pass1(State *state_store, char *asm_file_name) {
     FILE* asm_fp = fopen(asm_file_name, "r");
-    char* tmp_file_name, *prefix;
+    char* tmp_file_name, *prefix, *lst_file_name, *obj_file_name;
     int location_counter = 0, stmt_size = 0, line_num = -1;
     Statement stmt;
-    FILE* tmp_fp;
+    FILE* tmp_fp = NULL;
 
     prefix = before_dot(asm_file_name, MAX_ASM_FILENAME_LENGTH);
+
     tmp_file_name = concat_n(prefix, ".tmp", MAX_ASM_FILENAME_LENGTH);
+    lst_file_name = concat_n(prefix, ".lst", MAX_ASM_FILENAME_LENGTH);
+    obj_file_name = concat_n(prefix, ".obj", MAX_ASM_FILENAME_LENGTH);
 
     if(!tmp_file_name){
         fprintf(stderr, "[ERROR] Invalid File Format\n");
-        error_handling_pass1or2(asm_fp, NULL, NULL, NULL, NULL, NULL, line_num);
+        error_handling_pass1or2(NULL, asm_fp, tmp_fp, NULL, tmp_file_name, lst_file_name, obj_file_name, line_num);
         return false;
     }
 
     tmp_fp = fopen(tmp_file_name, "wt");
     if(!tmp_fp){
         fprintf(stderr, "[ERROR] Can't Create tmp file\n");
-        error_handling_pass1or2(asm_fp, NULL, NULL, NULL, NULL, NULL, line_num);
+        error_handling_pass1or2(NULL, asm_fp, tmp_fp, NULL, tmp_file_name, lst_file_name, obj_file_name, line_num);
         return false;
     }
 
     if(!asm_fp){
         fprintf(stderr, "[ERROR] Can't Open File\n");
-        error_handling_pass1or2(asm_fp, tmp_fp, NULL, NULL, tmp_file_name, NULL, line_num);
+        error_handling_pass1or2(NULL, asm_fp, tmp_fp, NULL, tmp_file_name, lst_file_name, obj_file_name, line_num);
         return false;
     }
     line_num = 5;
@@ -106,7 +109,7 @@ bool assemble_pass1(State *state_store, char *asm_file_name) {
                        false,
                        &location_counter,
                        &stmt_size)) {
-        error_handling_pass1or2(asm_fp, tmp_fp, NULL, tmp_file_name, NULL, NULL, line_num);
+        error_handling_pass1or2(&stmt, asm_fp, tmp_fp, NULL, tmp_file_name, lst_file_name, obj_file_name, line_num);
         return false;
     }
 
@@ -121,7 +124,7 @@ bool assemble_pass1(State *state_store, char *asm_file_name) {
                             false,
                             &location_counter,
                             &stmt_size)){
-            error_handling_pass1or2(asm_fp, tmp_fp, NULL, tmp_file_name, NULL, NULL, line_num);
+            error_handling_pass1or2(&stmt, asm_fp, tmp_fp, NULL, tmp_file_name, lst_file_name, obj_file_name, line_num);
             return false;
         }
         line_num += 5;
@@ -135,7 +138,7 @@ bool assemble_pass1(State *state_store, char *asm_file_name) {
 
             if (stmt.raw_symbol){
                 if(find_symbol_by_name(state_store->symbol_table_state, stmt.raw_symbol)) {
-                    error_handling_pass1or2(asm_fp, tmp_fp, NULL, tmp_file_name, NULL, NULL, line_num);
+                    error_handling_pass1or2(&stmt, asm_fp, tmp_fp, NULL, tmp_file_name, lst_file_name, obj_file_name, line_num);
                     return false;
                 }
                 Symbol* symbol = construct_symbol();
@@ -149,12 +152,12 @@ bool assemble_pass1(State *state_store, char *asm_file_name) {
             update_location_counter_by_format(&stmt, &location_counter);
 
             if(!update_location_counter_by_mnemonic_name(&stmt, &location_counter)){
-                error_handling_pass1or2(asm_fp, tmp_fp, NULL, tmp_file_name, NULL, NULL, line_num);
+                error_handling_pass1or2(&stmt, asm_fp, tmp_fp, NULL, tmp_file_name, lst_file_name, obj_file_name, line_num);
                 return false;
             }
 
             if(!update_location_counter_by_plus_and_format(&stmt, &location_counter)){
-                error_handling_pass1or2(asm_fp, tmp_fp, NULL, tmp_file_name, NULL, NULL, line_num);
+                error_handling_pass1or2(&stmt, asm_fp, tmp_fp, NULL, tmp_file_name, lst_file_name, obj_file_name, line_num);
                 return false;
             }
 
@@ -167,7 +170,7 @@ bool assemble_pass1(State *state_store, char *asm_file_name) {
         if(is_end_condition(&stmt, asm_fp)) break;
 
         if (!read_statement(state_store->opcode_table_state, asm_fp, tmp_fp, &stmt, false, NULL, NULL)) {
-            error_handling_pass1or2(asm_fp, tmp_fp, NULL, tmp_file_name, NULL, NULL, line_num);
+            error_handling_pass1or2(&stmt, asm_fp, tmp_fp, NULL, tmp_file_name, lst_file_name, obj_file_name, line_num);
             return false;
         }
         line_num += 5;
@@ -175,6 +178,9 @@ bool assemble_pass1(State *state_store, char *asm_file_name) {
 
     fclose(asm_fp);
     fclose(tmp_fp);
+    free(lst_file_name);
+    free(tmp_file_name);
+    free(obj_file_name);
 //    print_symbols(state_store->symbol_table_state);
     return true;
 }
@@ -211,7 +217,7 @@ bool assemble_pass2(State *state_store, char *asm_file_name) {
 
     if(!tmp_fp || !lst_fp || !obj_fp) {
         fprintf(stderr, "[ERROR] Can't Open Files \n");
-        error_handling_pass1or2(lst_fp, tmp_fp, obj_fp, tmp_file_name, lst_file_name,obj_file_name, line_num);
+        error_handling_pass1or2(NULL, lst_fp, tmp_fp, obj_fp, tmp_file_name, lst_file_name, obj_file_name, line_num);
         return false;
     }
 
@@ -224,7 +230,7 @@ bool assemble_pass2(State *state_store, char *asm_file_name) {
                        true,
                        &location_counter,
                        &stmt_size)) {
-        error_handling_pass1or2(lst_fp, tmp_fp, obj_fp, tmp_file_name, lst_file_name,obj_file_name, line_num);
+        error_handling_pass1or2(&stmt, lst_fp, tmp_fp, obj_fp, tmp_file_name, lst_file_name, obj_file_name, line_num);
         return false;
     }
     if(!stmt.comment && COMPARE_STRING(stmt.opcode->mnemonic_name,"START")){
@@ -241,7 +247,8 @@ bool assemble_pass2(State *state_store, char *asm_file_name) {
                             true,
                             &location_counter,
                             &stmt_size)){
-            error_handling_pass1or2(lst_fp, tmp_fp, obj_fp, tmp_file_name, lst_file_name,obj_file_name, line_num);
+            error_handling_pass1or2(&stmt, lst_fp, tmp_fp, obj_fp, tmp_file_name, lst_file_name, obj_file_name,
+                                    line_num);
             return false;
         }
         line_num += 5;
@@ -257,18 +264,21 @@ bool assemble_pass2(State *state_store, char *asm_file_name) {
                                true,
                                &location_counter,
                                &stmt_size)) {
-                error_handling_pass1or2(lst_fp, tmp_fp, obj_fp, tmp_file_name, lst_file_name,obj_file_name, line_num);
+                error_handling_pass1or2(&stmt, lst_fp, tmp_fp, obj_fp, tmp_file_name, lst_file_name, obj_file_name,
+                                        line_num);
                 return false;
             }
             line_num += 5;
             continue;
         }
         if(is_format(&stmt, 1) && !handling_format1(&stmt, &obj_code)) {
-            error_handling_pass1or2(lst_fp, tmp_fp, obj_fp, tmp_file_name, lst_file_name,obj_file_name, line_num);
+            error_handling_pass1or2(&stmt, lst_fp, tmp_fp, obj_fp, tmp_file_name, lst_file_name, obj_file_name,
+                                    line_num);
             return false;
         }
         else if(is_format(&stmt, 2) && !handling_format2(&stmt, &obj_code)){
-            error_handling_pass1or2(lst_fp, tmp_fp, obj_fp, tmp_file_name, lst_file_name,obj_file_name, line_num);
+            error_handling_pass1or2(&stmt, lst_fp, tmp_fp, obj_fp, tmp_file_name, lst_file_name, obj_file_name,
+                                    line_num);
             return false;
         }else if(is_format(&stmt, 3) &&
                  !handling_format3(state_store->symbol_table_state,
@@ -280,7 +290,8 @@ bool assemble_pass2(State *state_store, char *asm_file_name) {
                                    stmt_size,
                                    &is_base,
                                    &base)) {
-            error_handling_pass1or2(lst_fp, tmp_fp, obj_fp, tmp_file_name, lst_file_name,obj_file_name, line_num);
+            error_handling_pass1or2(&stmt, lst_fp, tmp_fp, obj_fp, tmp_file_name, lst_file_name, obj_file_name,
+                                    line_num);
             return false;
         }
         else if(is_format(&stmt, 0) && !handling_format_default(state_store->symbol_table_state,
@@ -289,7 +300,8 @@ bool assemble_pass2(State *state_store, char *asm_file_name) {
                                                                 &is_base,
                                                                 &base,
                                                                 &b_buf)) {
-            error_handling_pass1or2(lst_fp, tmp_fp, obj_fp, tmp_file_name, lst_file_name,obj_file_name, line_num);
+            error_handling_pass1or2(&stmt, lst_fp, tmp_fp, obj_fp, tmp_file_name, lst_file_name, obj_file_name,
+                                    line_num);
             return false;
         }
         record_stmt_for_pass2(&stmt,
@@ -309,7 +321,8 @@ bool assemble_pass2(State *state_store, char *asm_file_name) {
                            true,
                            &location_counter,
                            &stmt_size)) {
-            error_handling_pass1or2(lst_fp, tmp_fp, obj_fp, tmp_file_name, lst_file_name,obj_file_name, line_num);
+            error_handling_pass1or2(&stmt, lst_fp, tmp_fp, obj_fp, tmp_file_name, lst_file_name, obj_file_name,
+                                    line_num);
             return false;
         }
 
@@ -347,12 +360,16 @@ bool assemble_pass2(State *state_store, char *asm_file_name) {
 
     remove(tmp_file_name);
 
+    free(tmp_file_name);
     free(location_counters);
     free(b_buf);
     free(obj_buf);
     free(rec_head);
 
     fprintf(stdout, "\toutput file : [%s], [%s]\n", lst_file_name, obj_file_name);
+
+    free(lst_file_name);
+    free(obj_file_name);
 
     return true;
 }

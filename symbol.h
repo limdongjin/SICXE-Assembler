@@ -1,12 +1,9 @@
 #ifndef __SYMBOL_H__
 #define __SYMBOL_H__
 
-// [TODO] symbol table 구현
-// [TODO] assemble 명령과 연계
-
 #include <stdbool.h>
 #include <stdlib.h>
-
+#include <stdio.h>
 typedef struct symbol {
     char label[11];
     int location_counter;
@@ -48,6 +45,6 @@ Symbol * find_symbol_by_name(SymbolTable *table, char *name);
 //bool find_symbol(SymbolTable* table, Symbol* symb);
 void print_symbols(SymbolTable* table);
 
-static int symb_compare_func(const void *a, const void *b);
+int symbol_comparator(const void *a, const void *b);
 
 #endif

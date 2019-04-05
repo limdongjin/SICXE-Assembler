@@ -77,9 +77,8 @@ void print_symbols(SymbolTable* table){
     int size = table->size;
     Symbol *list[1200] = {0};
     int i = 0;
-
+    int num = 0;
     for(i = 0;i < size;i++){
-        printf("%2d : ", i);
         SymNode** cur = &(table->list[i]->head);
         Symbol* symb;
         for(int j=0;j<table->list[i]->size+1;j++){
@@ -89,24 +88,46 @@ void print_symbols(SymbolTable* table){
                 cur=&((*cur)->next);
                 continue;
             }
-            printf("[%s,%02d] ",symb->label,symb->location_counter);
-            if(j != table->list[i]->size)
-                printf(" -> ");
-            list[i++] = symb;
+            list[num++] = symb;
             cur = &((*cur)->next);
         }
-        printf("\n");
     }
+    symbol_comparator(NULL, NULL);
+    qsort(list, num, sizeof(Symbol *), symbol_comparator);
 
-    qsort(list, i, sizeof(Symbol*), symb_compare_func);
-
-    for (int k = 0; k < i; ++k)
-        printf ("\t%s\t%04X\n", list[k]->label, list[k]->location_counter);
+    for (int k = 0; k < num; ++k){
+        if(!list[k])
+            return;
+        printf ("\t%-5s\t%04X\n", list[k]->label, list[k]->location_counter);
+    }
 }
 
-static int symb_compare_func(const void *a, const void *b){
-    Symbol **left = (Symbol **) a;
-    Symbol **right = (Symbol **) b;
+int symbol_comparator(const void *a, const void *b){
+    if(!a || !b) return 0;
 
-    return strcmp ((*left)->label, (*right)->label);
+    Symbol *left = *(Symbol **) a;
+    Symbol *right = *(Symbol **) b;
+
+    if(!left) return 0;
+    if(!right) return 0;
+
+    return -1*strcmp(left->label, right->label);
 }
+
+/*
+ *         BUFFER  0036
+        CLOOP   0006
+        ENDFIL  001A
+        EOF     002D
+        EXIT    1056
+        FIRST   0000
+        INPUT   105C
+        LENGTH  0033
+        OUTPUT  1076
+        RDREC   1036
+        RETADR  0030
+        RLOOP   1040
+        WLOOP   1062
+        WRREC   105D
+ *
+ * */

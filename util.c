@@ -61,7 +61,6 @@ bool is_valid_hex(char* str){
  */
 bool is_valid_address(char *str, int max_size) {
     assert(str);
-    assert(max_size);
     int target = (int)strtol(str, NULL, 16);
 
     if(target < 0) return false; // 0 보다 큰지 검증

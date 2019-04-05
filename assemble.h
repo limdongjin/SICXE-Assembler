@@ -97,8 +97,8 @@ bool update_location_counter_by_plus_and_format(Statement *stmt, int *old_locati
 bool is_end_condition(Statement *stmt, FILE *fp);
 
 bool
-error_handling_pass1or2(FILE *fp1, FILE *fp2, FILE *fp3, char *rm_file_name1, char *rm_file_name2, char *rm_file_name3,
-                        int line_num);
+error_handling_pass1or2(Statement *stmt, FILE *fp1, FILE *fp2, FILE *fp3, char *rm_file_name1, char *rm_file_name2,
+                        char *rm_file_name3, int line_num);
 
 bool symbolizing_by_name(OpcodeTable *opcode_table, Statement *stmt, char *name);
 
