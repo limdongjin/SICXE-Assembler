@@ -51,6 +51,8 @@ void print_histories_state(State* state_store, char* last_command){
  */
 bool assemble_file(State *state_store, char *asm_file_name){
     assert(strlen(asm_file_name) < MAX_ASM_FILENAME_LENGTH);
+    free(state_store->symbol_table_state);
+    state_store->symbol_table_state = construct_symbol_table();
 
     // [TODO] 적절한 에러 처리 필요함.
     if(!assemble_pass1(state_store, asm_file_name)) {
@@ -58,7 +60,7 @@ bool assemble_file(State *state_store, char *asm_file_name){
         return false;
     }
     printf("pass1 end\n");
-//    print_symbols(state_store->symbol_table_state);
+
     // [TODO] 적절한 에러 처리 필요함.
     if(!assemble_pass2(state_store, asm_file_name)){
         fprintf(stderr, "[ERROR] pass2 fail. \n");
@@ -99,12 +101,12 @@ bool assemble_pass1(State *state_store, char *asm_file_name) {
     line_num = 5;
 
     // [TODO] 적절한 에러 처리 필요 (tmp 파일 삭제, 에러문, 라인넘버 출력 등등)
-    if(!generate_statement(state_store,
-                           asm_fp, tmp_fp,
-                           &stmt,
-                           false,
-                           &location_counter,
-                           &stmt_size)) {
+    if(!read_statement(state_store,
+                       asm_fp, tmp_fp,
+                       &stmt,
+                       false,
+                       &location_counter,
+                       &stmt_size)) {
         fprintf(stderr, "[ERROR] generate statement fail! \n");
         error_handling_pass1(asm_fp, tmp_fp, tmp_file_name, line_num);
         return false;
@@ -114,13 +116,13 @@ bool assemble_pass1(State *state_store, char *asm_file_name) {
         location_counter = strtol (stmt.tokens[0], NULL, 16);
         fprintf (tmp_fp, "%04X\t0\t%s\n", location_counter, stmt.raw_input);
 
-        if (!generate_statement (state_store,
-                                asm_fp,
-                                tmp_fp,
-                                &stmt,
-                                false,
-                                &location_counter,
-                                &stmt_size)){
+        if (!read_statement(state_store,
+                            asm_fp,
+                            tmp_fp,
+                            &stmt,
+                            false,
+                            &location_counter,
+                            &stmt_size)){
             fprintf(stderr, "[ERROR] generate2 statement fail! \n");
             error_handling_pass1(asm_fp, tmp_fp, tmp_file_name, line_num);
             return false;
@@ -169,7 +171,7 @@ bool assemble_pass1(State *state_store, char *asm_file_name) {
 
         if(is_end_condition(&stmt, asm_fp)) break;
 
-        if (!generate_statement (state_store, asm_fp, tmp_fp, &stmt, false, NULL, NULL)) {
+        if (!read_statement(state_store, asm_fp, tmp_fp, &stmt, false, NULL, NULL)) {
             error_handling_pass1(asm_fp, tmp_fp, tmp_file_name, line_num);
             return false;
         }
@@ -182,13 +184,13 @@ bool assemble_pass1(State *state_store, char *asm_file_name) {
     return true;
 }
 
-bool generate_statement(State *state_store,
-        FILE *asm_fp,
-        FILE *tmp_fp,
-        Statement *stmt,
-        bool is_tmp,
-        int *location_counter,
-        int *stmt_size) {
+bool read_statement(State *state_store,
+                    FILE *asm_fp,
+                    FILE *tmp_fp,
+                    Statement *stmt,
+                    bool is_tmp,
+                    int *location_counter,
+                    int *stmt_size) {
     FILE* fp;
     static char raw_input[220];
     static char tmp_input[200];
@@ -245,7 +247,7 @@ bool symbolizing_by_name(State *state_store, Statement *stmt, char *name) {
         stmt->raw_symbol = NULL;
         stmt->opcode = opc;
         offset = 1;
-    } else{
+    } else {
         if (stmt->token_cnt <= 1) return false;
 
         mark_plus_true_or_false(stmt, 1);
@@ -430,12 +432,12 @@ bool assemble_pass2(State *state_store, char *asm_file_name) {
     obj_buf[0] = '\0';
     line_num = 5;
     // [TODO] 적절한 에러 처리 필요 (tmp 파일 삭제, 에러문, 라인넘버 출력 등등)
-    if(!generate_statement(state_store,
-                           NULL, tmp_fp,
-                           &stmt,
-                           true,
-                           &location_counter,
-                           &stmt_size)) {
+    if(!read_statement(state_store,
+                       NULL, tmp_fp,
+                       &stmt,
+                       true,
+                       &location_counter,
+                       &stmt_size)) {
         fprintf(stderr, "[ERROR] generate statement fail. \n");
         return false;
     }
@@ -446,13 +448,13 @@ bool assemble_pass2(State *state_store, char *asm_file_name) {
         fprintf (lst_fp, "%d\t%04X%s\n", line_num, location_counter, stmt.raw_input);
         fprintf (obj_fp, "%19s\n", "");
 
-        if (!generate_statement (state_store,
-                                 NULL,
-                                 tmp_fp,
-                                 &stmt,
-                                 true,
-                                 &location_counter,
-                                 &stmt_size)){
+        if (!read_statement(state_store,
+                            NULL,
+                            tmp_fp,
+                            &stmt,
+                            true,
+                            &location_counter,
+                            &stmt_size)){
 //            error_handling_pass1(NULL, tmp_fp, tmp_file_name, line_num);
             fprintf(stderr, "[ERROR] generate2 statement fail! \n");
             return false;
@@ -464,12 +466,12 @@ bool assemble_pass2(State *state_store, char *asm_file_name) {
         if(stmt.comment){
             fprintf (lst_fp, "%d\t%s\n", line_num, stmt.raw_input);
             if(is_end_condition(&stmt, tmp_fp)) break;
-            if(!generate_statement(state_store,
-                                   NULL, tmp_fp,
-                                   &stmt,
-                                   true,
-                                   &location_counter,
-                                   &stmt_size)) {
+            if(!read_statement(state_store,
+                               NULL, tmp_fp,
+                               &stmt,
+                               true,
+                               &location_counter,
+                               &stmt_size)) {
 //                error_handling_pass1(NULL, tmp_fp, tmp_file_name, line_num);
                 fprintf(stderr, "[ERROR] generate statement fail. \n");
                 return false;
@@ -517,12 +519,12 @@ bool assemble_pass2(State *state_store, char *asm_file_name) {
                               &b_buf,
                               &rec_head);
         if(is_end_condition(&stmt, tmp_fp)) break;
-        if(!generate_statement(state_store,
-                               NULL, tmp_fp,
-                               &stmt,
-                               true,
-                               &location_counter,
-                               &stmt_size)) {
+        if(!read_statement(state_store,
+                           NULL, tmp_fp,
+                           &stmt,
+                           true,
+                           &location_counter,
+                           &stmt_size)) {
             fprintf(stderr, "[ERROR] generate statement fail. \n");
             return false;
         }
@@ -934,6 +936,7 @@ record_stmt_for_pass2(Statement *stmt, int *obj_code, int *location_counter, int
         if(*location_counter + 2 > *r_lc + 30){
             snprintf(*rec_head, 30, "T%06X%02X", *r_lc, (uint8_t) strlen (*obj_buf) / 2);
             fprintf(stderr, "[DEBUG] %X obj_fp write %s%s\n", *location_counter, *rec_head, *obj_buf);
+            fprintf (obj_fp, "%s%s\n", *rec_head, *obj_buf);
             *r_lc = *location_counter;
             (*obj_buf)[0] = '\0';
         }
@@ -958,7 +961,7 @@ record_stmt_for_pass2(Statement *stmt, int *obj_code, int *location_counter, int
                 snprintf(*rec_head, 30, "T%06X%02X", *r_lc, (uint8_t) strlen (*obj_buf) / 2);
                 fprintf(stderr, "[DEBUG] %X obj_fp write %s%s\n", *location_counter,*rec_head, *obj_buf);
                 fprintf (obj_fp, "%s%s\n", *rec_head, *obj_buf);
-                r_lc = location_counter;
+                *r_lc = *location_counter;
                 (*obj_buf)[0] = '\0';
             }
 //            VERIFY_TEXT_RECORD_MAX_BYTES (3);
@@ -971,7 +974,7 @@ record_stmt_for_pass2(Statement *stmt, int *obj_code, int *location_counter, int
             snprintf(*rec_head, 30, "T%06X%02X", *r_lc, (uint8_t) strlen (*obj_buf) / 2);
             fprintf(stderr, "[DEBUG] %X obj_fp write %s%s\n", *location_counter,*rec_head, *obj_buf);
             fprintf (obj_fp, "%s%s\n", *rec_head, *obj_buf);
-            r_lc = location_counter;
+            *r_lc = *location_counter;
             (*obj_buf)[0] = '\0';
         }
 //        VERIFY_TEXT_RECORD_MAX_BYTES (strlen (*byte_buf));
@@ -982,7 +985,7 @@ record_stmt_for_pass2(Statement *stmt, int *obj_code, int *location_counter, int
             snprintf(*rec_head, 30, "T%06X%02X", *r_lc, (uint8_t) strlen (*obj_buf) / 2);
             fprintf(stderr, "[DEBUG] %X obj_fp write %s%s\n", *location_counter,*rec_head, *obj_buf);
             fprintf (obj_fp, "%s%s\n", *rec_head, *obj_buf);
-            r_lc = location_counter;
+            *r_lc = *location_counter;
             (*obj_buf)[0] = '\0';
         }
 //        VERIFY_TEXT_RECORD_MAX_BYTES (3);

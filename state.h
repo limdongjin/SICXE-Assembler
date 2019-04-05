@@ -98,8 +98,8 @@ char *concat_n(char *name, char *name2, int max_size);
 bool assemble_pass1(State *state_store, char *asm_file_name);
 
 bool
-generate_statement(State *state_store, FILE *asm_fp, FILE *tmp_fp, Statement *stmt, bool is_tmp, int *location_counter,
-                   int *stmt_size);
+read_statement(State *state_store, FILE *asm_fp, FILE *tmp_fp, Statement *stmt, bool is_tmp, int *location_counter,
+               int *stmt_size);
 
 bool symbolizing_by_name(State *state_store, Statement *stmt, char *name);
 
