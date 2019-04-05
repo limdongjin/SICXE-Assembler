@@ -1,3 +1,4 @@
+#include "state.h"
 #include "util.h"
 
 /*
@@ -69,4 +70,30 @@ bool is_valid_address(char *str, int max_size) {
     if(!is_valid_hex(str)) return false; // 올바른 hex 값인지 검증
 
     return true;
+}
+
+char *before_dot(char *name, int size) {
+    char *pre;
+    char* dot;
+    pre = malloc(sizeof(char)*size);
+
+    strncpy(pre, name, size);
+
+    dot = strrchr (pre,'.');
+
+    if(dot == NULL){
+        return NULL;
+    }
+    *dot = '\0';
+
+    return pre;
+}
+
+char *concat_n(char *name, char *name2, int max_size) {
+    char* res;
+    res = malloc(sizeof(char)*max_size);
+
+    snprintf (res, max_size, "%s%s", name, name2);
+
+    return res;
 }

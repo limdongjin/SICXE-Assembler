@@ -34,4 +34,8 @@ bool is_valid_hex(char* str);
  */
 bool is_valid_address(char *str, int max_size);
 
+char *before_dot(char *name, int size);
+
+char *concat_n(char *name, char *name2, int max_size);
+
 #endif
