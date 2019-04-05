@@ -37,6 +37,8 @@ typedef struct symbol_table {
 
 SymbolTable* construct_symbol_table();
 //SymLinkedList* construct_symbol_linked_list();
+bool destroy_symbol_table(SymbolTable** table);
+
 SymNode* construct_symbol_node();
 Symbol* construct_symbol();
 bool insert_symbol(SymbolTable* table, Symbol* symbol);

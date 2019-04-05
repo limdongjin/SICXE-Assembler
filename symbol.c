@@ -21,6 +21,30 @@ SymbolTable* construct_symbol_table(){
     table->size = 40;
     return table;
 }
+
+bool destroy_symbol_table(SymbolTable** table){
+    SymNode *cur;
+    SymNode *next;
+    SymLinkedList** list;
+    int i, j;
+
+    list = (*table)->list;
+    for(i=0;i<(*table)->size;i++){
+        cur = list[i]->head;
+
+        for(j=0;j<list[i]->size+1;j++){
+            next = cur->next;
+            free(cur->data);
+            free(cur);
+            cur = next;
+        }
+        free(list[i]);
+    }
+    free(*table);
+
+    return true;
+}
+
 SymNode* construct_symbol_node(){
     SymNode* node = (SymNode*)malloc(sizeof(SymNode));
 
@@ -113,21 +137,3 @@ int symbol_comparator(const void *a, const void *b){
 
     return -1*strcmp(left->label, right->label);
 }
-
-/*
- *         BUFFER  0036
-        CLOOP   0006
-        ENDFIL  001A
-        EOF     002D
-        EXIT    1056
-        FIRST   0000
-        INPUT   105C
-        LENGTH  0033
-        OUTPUT  1076
-        RDREC   1036
-        RETADR  0030
-        RLOOP   1040
-        WLOOP   1062
-        WRREC   105D
- *
- * */

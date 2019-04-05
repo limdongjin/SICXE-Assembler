@@ -57,10 +57,6 @@ void print_histories_state(State* state_store, char* last_command);
  */
 bool assemble_file(State *state_store, char *asm_file_name);
 
-/* PASS1 */
-
-/* PASS2 */
-
 bool assemble_pass1(State *state_store, char *asm_file_name);
 
 bool assemble_pass2(State *state_store, char *asm_file_name);

@@ -501,7 +501,7 @@ error_handling_pass1or2(Statement *stmt, FILE *fp1, FILE *fp2, FILE *fp3, char *
     if(rm_file_name3) remove(rm_file_name3);
 
     if(line_num != -1 && stmt && stmt->raw_input) {
-        fprintf(stderr, "[ERROR] Line %d: %s \n", line_num + 5, stmt->raw_input);
+        fprintf(stderr, "[ERROR] Line %d: %s \n", line_num, stmt->raw_input);
     }
 
     return true;

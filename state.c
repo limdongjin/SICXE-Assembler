@@ -27,6 +27,7 @@ bool destroy_state(State **state_store){
     destroy_histories(&((*state_store)->histories_state));
     destroy_memories(&((*state_store)->memories_state));
     destroy_opcode_table(&(*state_store)->opcode_table_state);
+    destroy_symbol_table(&((*state_store)->symbol_table_state));
 
     free(*state_store);
 
