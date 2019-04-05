@@ -85,4 +85,6 @@ shell_status execute_assemble(Command *user_command, State* state_store);
 
 shell_status execute_type(Command* user_command);
 
+shell_status execute_symbol(State *state_store);
+
 #endif

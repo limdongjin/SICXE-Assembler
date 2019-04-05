@@ -92,6 +92,8 @@ shell_status command_mapping_type(Command *user_command){
         user_command->type = TYPE_ASSEMBLE;
     } else if(COMPARE_STRING(first_token, "type")){
         user_command->type = TYPE_TYPE;
+    } else if(COMPARE_STRING(first_token, "symbol")){
+        user_command->type = TYPE_SYMBOL;
     } else {
         return INVALID_COMMAND_TYPE;
     }

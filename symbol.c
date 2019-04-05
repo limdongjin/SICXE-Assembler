@@ -55,8 +55,6 @@ Symbol * find_symbol_by_name(SymbolTable *table, char *name){
     int hash = (int)hash_string(name, 40);
     int i;
 
-//    print_symbols(table);
-
     SymNode** cur = &(table->list[hash]->head);
     Symbol* symb;
 
@@ -66,7 +64,7 @@ Symbol * find_symbol_by_name(SymbolTable *table, char *name){
             cur = &((*cur)->next);
             continue;
         }
-//        fprintf(stdout, "target: %s , cur: %s\n", name, symb->label);
+
         if(COMPARE_STRING(symb->label, name)){
             return symb;
         }
@@ -77,24 +75,38 @@ Symbol * find_symbol_by_name(SymbolTable *table, char *name){
 
 void print_symbols(SymbolTable* table){
     int size = table->size;
-    for(int i = 0;i < size;i++){
+    Symbol *list[1200] = {0};
+    int i = 0;
+
+    for(i = 0;i < size;i++){
         printf("%2d : ", i);
         SymNode** cur = &(table->list[i]->head);
         Symbol* symb;
         for(int j=0;j<table->list[i]->size+1;j++){
             symb = (*cur)->data;
-//            if(opc->value == -1) cnt -= 1;
+
             if(COMPARE_STRING(symb->label, "---nono--")){
                 cur=&((*cur)->next);
                 continue;
             }
             printf("[%s,%02d] ",symb->label,symb->location_counter);
-//            printf("gogo %s %d\n", opc->mnemonic_name, opc->value);
-//            cnt += 1;
             if(j != table->list[i]->size)
                 printf(" -> ");
+            list[i++] = symb;
             cur = &((*cur)->next);
         }
         printf("\n");
     }
+
+    qsort(list, i, sizeof(Symbol*), symb_compare_func);
+
+    for (int k = 0; k < i; ++k)
+        printf ("\t%s\t%04X\n", list[k]->label, list[k]->location_counter);
+}
+
+static int symb_compare_func(const void *a, const void *b){
+    Symbol **left = (Symbol **) a;
+    Symbol **right = (Symbol **) b;
+
+    return strcmp ((*left)->label, (*right)->label);
 }

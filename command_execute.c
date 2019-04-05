@@ -34,6 +34,8 @@ shell_status command_execute(Command *user_command, State *state_store) {
             return execute_assemble(user_command, state_store);
         case TYPE_TYPE:
             return execute_type(user_command);
+        case TYPE_SYMBOL:
+            return execute_symbol(state_store);
         default:
             break;
     }
@@ -246,5 +248,12 @@ shell_status execute_type(Command* user_command){
         fputs (buf, stdout);
 
     fclose(fp);
+    return EXECUTE_SUCCESS;
+}
+
+shell_status execute_symbol(State *state_store) {
+    if(!state_store->is_symbol_table) return EXECUTE_FAIL;
+
+    print_symbols(state_store->symbol_table_state);
     return EXECUTE_SUCCESS;
 }

@@ -15,7 +15,7 @@ State* construct_state(){
     build_opcode_table(state_obj->opcode_table_state);
 
     state_obj->symbol_table_state = construct_symbol_table();
-
+    state_obj->is_symbol_table = false;
     return state_obj;
 }
 
@@ -56,16 +56,17 @@ bool assemble_file(State *state_store, char *asm_file_name){
     free(state_store->symbol_table_state);
     state_store->symbol_table_state = construct_symbol_table();
 
-    // [TODO] 적절한 에러 처리 필요함.
     if(!assemble_pass1(state_store, asm_file_name)) {
+        state_store->is_symbol_table = false;
         return false;
     }
 
-    // [TODO] 적절한 에러 처리 필요함.
     if(!assemble_pass2(state_store, asm_file_name)){
+        state_store->is_symbol_table = false;
         return false;
     }
 
+    state_store->is_symbol_table = true;
     return true;
 }
 

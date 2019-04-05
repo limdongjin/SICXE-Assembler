@@ -28,6 +28,8 @@ typedef struct state {
 
     // symbol 정보 저장
     SymbolTable* symbol_table_state;
+
+    bool is_symbol_table;
 } State;
 
 /*

@@ -101,9 +101,10 @@ shell_status validate_parameters(Command *user_command){
         user_command->type == TYPE_HISTORY ||
         user_command->type == TYPE_DIR ||
         user_command->type == TYPE_RESET ||
-        user_command->type == TYPE_OPCODELIST) &&
-       user_command->token_cnt > 1
-            )
+        user_command->type == TYPE_OPCODELIST ||
+        user_command->type == TYPE_SYMBOL
+       ) &&
+       user_command->token_cnt > 1)
         return INVALID_PARAMETERS;
     if(user_command->type == TYPE_TYPE && user_command->token_cnt != 2)
         return INVALID_PARAMETERS;

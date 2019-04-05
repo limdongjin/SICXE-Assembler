@@ -47,4 +47,7 @@ bool insert_symbol(SymbolTable* table, Symbol* symbol);
 Symbol * find_symbol_by_name(SymbolTable *table, char *name);
 //bool find_symbol(SymbolTable* table, Symbol* symb);
 void print_symbols(SymbolTable* table);
+
+static int symb_compare_func(const void *a, const void *b);
+
 #endif
