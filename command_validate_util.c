@@ -105,11 +105,12 @@ shell_status validate_parameters(Command *user_command){
        user_command->token_cnt > 1
             )
         return INVALID_PARAMETERS;
+    if(user_command->type == TYPE_TYPE && user_command->token_cnt != 2)
+        return INVALID_PARAMETERS;
     if(user_command->type == TYPE_OPCODE)
         return validate_opcode_parameters(user_command);
     if(user_command->type == TYPE_EDIT)
         return validate_edit_parameters(user_command);
-
     if(user_command->type == TYPE_FILL)
         return validate_fill_parameters(user_command);
     if(user_command->type == TYPE_DUMP)

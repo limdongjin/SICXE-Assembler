@@ -58,17 +58,13 @@ bool assemble_file(State *state_store, char *asm_file_name){
 
     // [TODO] 적절한 에러 처리 필요함.
     if(!assemble_pass1(state_store, asm_file_name)) {
-        fprintf(stderr, "[ERROR] pass1 fail.\n");
         return false;
     }
-//    printf("pass1 end\n");
 
     // [TODO] 적절한 에러 처리 필요함.
     if(!assemble_pass2(state_store, asm_file_name)){
-        fprintf(stderr, "[ERROR] pass2 fail. \n");
         return false;
     }
-//    printf("pass2 end\n");
 
     return true;
 }
@@ -103,7 +99,6 @@ bool assemble_pass1(State *state_store, char *asm_file_name) {
     }
     line_num = 5;
 
-    // [TODO] 적절한 에러 처리 필요 (tmp 파일 삭제, 에러문, 라인넘버 출력 등등)
     if(!read_statement(state_store->opcode_table_state,
                        asm_fp, tmp_fp,
                        &stmt,
@@ -324,7 +319,6 @@ bool assemble_pass2(State *state_store, char *asm_file_name) {
 
     if(location_counter + 30 > r_lc + 30){
         snprintf(rec_head, 30, "T%06X%02X", r_lc, (uint8_t)strlen(obj_buf) / 2);
-//        fprintf(stderr, "[DEBUG] %X obj_fp write %s%s\n", location_counter, rec_head, obj_buf);
         fprintf (obj_fp, "%s%s\n", rec_head, obj_buf);
         r_lc = location_counter;
         obj_buf[0] = '\0';
@@ -332,12 +326,10 @@ bool assemble_pass2(State *state_store, char *asm_file_name) {
 
     for (int i = 0; i < location_counter_cnt; ++i){
         snprintf (rec_head, 30, "M%06X05", location_counters[i]);
-//        fprintf(stderr, "[DEBUG] %X obj_fp write %s%s\n", location_counter, rec_head, obj_buf);
         fprintf (obj_fp, "%s\n", rec_head);
     }
 
     snprintf (rec_head, 30, "E%06X", start_lc);
-//    fprintf(stderr, "[DEBUG] %X obj_fp write %s\n", start_lc,rec_head);
     fprintf (obj_fp, "%s\n", rec_head);
     snprintf (rec_head,
               30,
@@ -346,17 +338,20 @@ bool assemble_pass2(State *state_store, char *asm_file_name) {
               start_lc,
               location_counter - start_lc);
     fseek (obj_fp, 0, SEEK_SET);
-//    fprintf(stderr, "[DEBUG] obj_fp write %s\n", rec_head);
     fprintf (obj_fp, "%s\n", rec_head);
 
     if(tmp_fp) fclose(tmp_fp);
     if(lst_fp) fclose(lst_fp);
     if(obj_fp) fclose(obj_fp);
 
+    remove(tmp_file_name);
+
     free(location_counters);
     free(b_buf);
     free(obj_buf);
     free(rec_head);
+
+    fprintf(stdout, "\toutput file : [%s], [%s]\n", lst_file_name, obj_file_name);
 
     return true;
 }

@@ -41,47 +41,39 @@ record_stmt_for_pass2(Statement *stmt, int *obj_code, int *location_counter, int
         format = "%d\t%04X%-30s%02X\n";
         if(*location_counter + 1 > *r_lc + 30){
             snprintf(*rec_head, 30, "T%06X%02X", *r_lc, (uint8_t) strlen (*obj_buf) / 2);
-            fprintf(stderr, "[DEBUG] %d obj_fp write %s%s\n", *location_counter, *rec_head, *obj_buf);
             fprintf (obj_fp, "%s%s\n", *rec_head, *obj_buf);
             *r_lc = *location_counter;
             (*obj_buf)[0] = '\0';
         }
-//        VERIFY_TEXT_RECORD_MAX_BYTES (1);
         sprintf ((*obj_buf) + strlen (*obj_buf), "%02X", (*obj_code));
     }else if (is_format(stmt, 2)){
         format = "%d\t%04X%-30s%04X\n";
         if(*location_counter + 2 > *r_lc + 30){
             snprintf(*rec_head, 30, "T%06X%02X", *r_lc, (uint8_t) strlen (*obj_buf) / 2);
-            fprintf(stderr, "[DEBUG] %X obj_fp write %s%s\n", *location_counter, *rec_head, *obj_buf);
             fprintf (obj_fp, "%s%s\n", *rec_head, *obj_buf);
             *r_lc = *location_counter;
             (*obj_buf)[0] = '\0';
         }
-//        VERIFY_TEXT_RECORD_MAX_BYTES (2);
         sprintf ((*obj_buf) + strlen (*obj_buf), "%04X", (*obj_code));
     }else if (is_format(stmt, 3)){
         if (stmt->plus){
             format = "%d\t%04X%-30s%08X\n";
             if(*location_counter + 4 > *r_lc + 30){
                 snprintf(*rec_head, 30, "T%06X%02X", *r_lc, (uint8_t) strlen (*obj_buf) / 2);
-                fprintf(stderr, "[DEBUG] %X obj_fp write %s%s\n", *location_counter, *rec_head, *obj_buf);
                 fprintf (obj_fp, "%s%s\n", *rec_head, *obj_buf);
                 *r_lc = *location_counter;
                 (*obj_buf)[0] = '\0';
             }
-//            VERIFY_TEXT_RECORD_MAX_BYTES (4);
             sprintf ((*obj_buf) + strlen (*obj_buf), "%08X", (*obj_code));
         }
         else{
             format = "%d\t%04X%-30s%06X\n";
             if(*location_counter + 3 > *r_lc + 30){
                 snprintf(*rec_head, 30, "T%06X%02X", *r_lc, (uint8_t) strlen (*obj_buf) / 2);
-                fprintf(stderr, "[DEBUG] %X obj_fp write %s%s\n", *location_counter,*rec_head, *obj_buf);
                 fprintf (obj_fp, "%s%s\n", *rec_head, *obj_buf);
                 *r_lc = *location_counter;
                 (*obj_buf)[0] = '\0';
             }
-//            VERIFY_TEXT_RECORD_MAX_BYTES (3);
             sprintf ((*obj_buf) + strlen (*obj_buf), "%06X", (*obj_code));
         }
     }else if (COMPARE_STRING(stmt->opcode->mnemonic_name,"BYTE")){
@@ -89,23 +81,19 @@ record_stmt_for_pass2(Statement *stmt, int *obj_code, int *location_counter, int
         format = NULL;
         if(*location_counter + (int)strlen(*byte_buf) > *r_lc + 30){
             snprintf(*rec_head, 30, "T%06X%02X", *r_lc, (uint8_t) strlen (*obj_buf) / 2);
-            fprintf(stderr, "[DEBUG] %X obj_fp write %s%s\n", *location_counter,*rec_head, *obj_buf);
             fprintf (obj_fp, "%s%s\n", *rec_head, *obj_buf);
             *r_lc = *location_counter;
             (*obj_buf)[0] = '\0';
         }
-//        VERIFY_TEXT_RECORD_MAX_BYTES (strlen (*byte_buf));
         sprintf ((*obj_buf) + strlen (*obj_buf), "%s", (*byte_buf));
     }else if (COMPARE_STRING(stmt->opcode->mnemonic_name, "WORD")){
         format = "%d\t%04X%-30s%06X\n";
         if(*location_counter + 3 > *r_lc + 30){
             snprintf(*rec_head, 30, "T%06X%02X", *r_lc, (uint8_t) strlen (*obj_buf) / 2);
-            fprintf(stderr, "[DEBUG] %X obj_fp write %s%s\n", *location_counter,*rec_head, *obj_buf);
             fprintf (obj_fp, "%s%s\n", *rec_head, *obj_buf);
             *r_lc = *location_counter;
             (*obj_buf)[0] = '\0';
         }
-//        VERIFY_TEXT_RECORD_MAX_BYTES (3);
         sprintf ((*obj_buf) + strlen (*obj_buf), "%06X", (*obj_code));
     }else{
         fprintf (lst_fp, "%d\t%s\n",(*line_num), stmt->raw_input);
@@ -573,7 +561,7 @@ bool read_statement(OpcodeTable *opcode_table,
 
     raw_input[length - 1] = '\0';
 
-    printf("%s\n", raw_input);
+//    printf("%s\n", raw_input);
 
     if(is_tmp){
         sscanf (raw_input, "%X\t%X%n", location_counter, stmt_size, &offset);

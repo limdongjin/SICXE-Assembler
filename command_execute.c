@@ -32,6 +32,8 @@ shell_status command_execute(Command *user_command, State *state_store) {
             return execute_dump(user_command, state_store->memories_state);
         case TYPE_ASSEMBLE:
             return execute_assemble(user_command, state_store);
+        case TYPE_TYPE:
+            return execute_type(user_command);
         default:
             break;
     }
@@ -228,4 +230,21 @@ shell_status execute_assemble(Command *user_command, State* state_store){
         return EXECUTE_SUCCESS;
     else
         return EXECUTE_FAIL;
+}
+
+shell_status execute_type(Command* user_command){
+    assert(user_command->token_cnt == 2);
+    if(!user_command->tokens[1])
+        return EXECUTE_FAIL;
+    FILE* fp = fopen(user_command->tokens[1], "rt");
+    char buf[1000];
+    if(!fp){
+        fprintf(stderr, "[ERROR] Can't Open File\n");
+        return EXECUTE_FAIL;
+    }
+    while (fgets (buf, sizeof(buf), fp))
+        fputs (buf, stdout);
+
+    fclose(fp);
+    return EXECUTE_SUCCESS;
 }
