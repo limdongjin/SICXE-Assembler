@@ -152,7 +152,7 @@ Opcode* find_opcode_by_name(OpcodeTable* table, char* name){
     OpNode** cur = &(table->list[hash]->head);
     Opcode* opc;
 
-    // DEFAULT OPCODE
+    // DEFAULT OPCODE only just hard coding
     if(COMPARE_STRING(name, "START")
         || COMPARE_STRING(name, "END")
         || COMPARE_STRING(name, "BYTE")
@@ -164,6 +164,7 @@ Opcode* find_opcode_by_name(OpcodeTable* table, char* name){
         opc = construct_opcode();
         strncpy(opc->mnemonic_name, name, 10);
         opc->value = 0;
+        opc->format = OP_DEFAULT;
         return opc;
     }
 

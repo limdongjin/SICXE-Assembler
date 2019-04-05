@@ -4,6 +4,9 @@
 // [TODO] symbol table 구현
 // [TODO] assemble 명령과 연계
 
+#include <stdbool.h>
+#include <stdlib.h>
+
 typedef struct symbol {
     char label[11];
     int location_counter;
@@ -31,8 +34,17 @@ typedef struct sym_linked_list {
  * symbol 정보들을 해시테이블 형태로 저장하기 위한 구조체.
  */
 typedef struct symbol_table {
-    SymLinkedList** list;
+    SymLinkedList* list[40];
     int size;
 }SymbolTable;
 
+SymbolTable* construct_symbol_table();
+//SymLinkedList* construct_symbol_linked_list();
+SymNode* construct_symbol_node();
+Symbol* construct_symbol();
+bool insert_symbol(SymbolTable* table, Symbol* symbol);
+
+Symbol * find_symbol_by_name(SymbolTable *table, char *name);
+//bool find_symbol(SymbolTable* table, Symbol* symb);
+void print_symbols(SymbolTable* table);
 #endif

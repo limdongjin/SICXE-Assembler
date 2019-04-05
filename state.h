@@ -28,6 +28,44 @@ typedef struct state {
     SymbolTable* symbol_table_state;
 } State;
 
+typedef union bits_format2{
+    struct
+    {
+        uint16_t r2     : 4;
+        uint16_t r1     : 4;
+        uint16_t opcode : 8;
+    } bits;
+    uint16_t res;
+}BitsFormat2;
+
+typedef union bits_format3{
+    struct{
+        uint32_t disp   : 12;
+        uint32_t e      : 1;
+        uint32_t p      : 1;
+        uint32_t b      : 1;
+        uint32_t x      : 1;
+        uint32_t i      : 1;
+        uint32_t n      : 1;
+        uint32_t opcode : 6;
+    } bits;
+    uint32_t res;
+}BitsFormat3;
+
+typedef union bits_format4{
+    struct{
+        uint32_t addr: 20;
+        uint32_t e      : 1;
+        uint32_t p      : 1;
+        uint32_t b      : 1;
+        uint32_t x      : 1;
+        uint32_t i      : 1;
+        uint32_t n      : 1;
+        uint32_t opcode : 6;
+    } bits;
+    uint32_t res;
+}BitsFormat4;
+
 /*
  * History, 가상 Memory, Opcode 정보가 초기화(및 저장)된 State* 을 리턴한다.
  */
@@ -75,17 +113,33 @@ bool is_plus_stmt(Statement *stmt, int str_idx);
 
 bool mark_plus_true_or_false(Statement *stmt, int str_idx);
 
-void update_location_counter_by_format(Statement *stmt, int *old_location_counter);
+void update_location_counter_by_format(Statement *stmt, int *location_counter);
 
-bool update_location_counter_by_mnemonic_name(Statement *stmt, int *old_location_counter);
+bool update_location_counter_by_mnemonic_name(Statement *stmt, int *location_counter);
 
 bool update_location_counter_by_plus_and_format(Statement *stmt, int *old_location_counter);
 
-bool is_end_condition(Statement *stmt, FILE *asm_fp);
+bool is_end_condition(Statement *stmt, FILE *fp);
 
 bool error_handling_pass1(FILE* asm_fp, FILE* tmp_fp, char* tmp_fname, int line_num);
 
 /* PASS2 */
 bool assemble_pass2(State *state_store, char *asm_file_name);
+bool is_format(Statement* stmt, int num);
+bool handling_format1(Statement *stmt, int* obj_code);
+bool handling_format2(Statement *stmt, int *obj_code);
+
+bool
+handling_format3(SymbolTable *symbol_table, Statement *stmt, int *obj_code, int *location_counter,
+                 int **location_counters,
+                 int *location_counter_cnt, int stmt_size, bool *is_base, int *base);
+
+bool handling_format_default(SymbolTable *symbol_table, Statement *stmt, int *obj_code, bool *is_base, int *base,
+                             char **b_buf);
+
+bool
+record_stmt_for_pass2(Statement *stmt, int *obj_code, int *location_counter, int *r_lc, int *line_num, FILE *lst_fp,
+                      FILE *obj_fp, char **obj_buf, char **byte_buf, char **rec_head);
+int reg_mnemonic_num (char *reg_mnemonic);
 
 #endif
