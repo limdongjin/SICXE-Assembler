@@ -234,6 +234,10 @@ shell_status execute_assemble(Command *user_command, State* state_store){
         return EXECUTE_FAIL;
 }
 
+
+/*
+ *  type 명령어
+ */
 shell_status execute_type(Command* user_command){
     assert(user_command->token_cnt == 2);
     if(!user_command->tokens[1])
@@ -247,10 +251,14 @@ shell_status execute_type(Command* user_command){
     while (fgets (buf, sizeof(buf), fp))
         fputs (buf, stdout);
     fputs("\n", stdout);
+
     fclose(fp);
     return EXECUTE_SUCCESS;
 }
 
+/*
+ * symbol 명령어
+ */
 shell_status execute_symbol(State *state_store) {
     if(!state_store->is_symbol_table) return EXECUTE_FAIL;
 

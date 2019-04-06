@@ -1,5 +1,9 @@
 #include "symbol.h"
 #include "util.h"
+
+/*
+ * Symbol table 생성자 함수
+ */
 SymbolTable* construct_symbol_table(){
     SymbolTable* table = malloc(sizeof(*table));
     int i;
@@ -22,6 +26,9 @@ SymbolTable* construct_symbol_table(){
     return table;
 }
 
+/*
+ * Symbol table 소멸자 함수
+ */
 bool destroy_symbol_table(SymbolTable** table){
     SymNode *cur;
     SymNode *next;
@@ -45,11 +52,18 @@ bool destroy_symbol_table(SymbolTable** table){
     return true;
 }
 
+/*
+ * SymNode 생성자 함수
+ */
 SymNode* construct_symbol_node(){
     SymNode* node = (SymNode*)malloc(sizeof(SymNode));
 
     return node;
 }
+
+/*
+ * Symbol 생성자 함수
+ */
 Symbol* construct_symbol(){
     Symbol* symb = (Symbol*)malloc(sizeof(Symbol));
     strncpy(symb->label, "---nono--", 11);
@@ -57,6 +71,9 @@ Symbol* construct_symbol(){
     return symb;
 }
 
+/*
+ * SymbolTable 구조체의 해시테이블에 Symbol 을 추가한다.
+ */
 bool insert_symbol(SymbolTable* table, Symbol* symbol){
     SymNode *node = malloc(sizeof(SymNode));
     int hash = (int)hash_string(symbol->label, 40);
@@ -75,6 +92,9 @@ bool insert_symbol(SymbolTable* table, Symbol* symbol){
     return true;
 }
 
+/*
+ * Symbol 을 찾는 함수
+ */
 Symbol * find_symbol_by_name(SymbolTable *table, char *name){
     int hash = (int)hash_string(name, 40);
     int i;
@@ -97,6 +117,9 @@ Symbol * find_symbol_by_name(SymbolTable *table, char *name){
     return NULL;
 }
 
+/*
+* SymbolTable 에 저장된 Symbol 들을 내림차순으로 출력한다
+*/
 void print_symbols(SymbolTable* table){
     int size = table->size;
     Symbol *list[1200] = {0};
@@ -116,7 +139,7 @@ void print_symbols(SymbolTable* table){
             cur = &((*cur)->next);
         }
     }
-    symbol_comparator(NULL, NULL);
+//    symbol_comparator(NULL, NULL);
     qsort(list, num, sizeof(Symbol *), symbol_comparator);
 
     for (int k = 0; k < num; ++k){
@@ -126,6 +149,9 @@ void print_symbols(SymbolTable* table){
     }
 }
 
+/*
+ * Sort Comparator 함수
+ */
 int symbol_comparator(const void *a, const void *b){
     if(!a || !b) return 0;
 

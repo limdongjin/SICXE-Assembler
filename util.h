@@ -34,8 +34,15 @@ bool is_valid_hex(char* str);
  */
 bool is_valid_address(char *str, int max_size);
 
+/*
+ * 문자열에서  . 이전의 문자열 을 찾아서 리턴한다.
+ * 예를들어 before_dot(2_5.asm) 은 2_5가 리턴된다.
+ */
 char *before_dot(char *name, int size);
 
+/*
+ * 두 문자열을 합치는 concat 함수
+ */
 char *concat_n(char *name, char *name2, int max_size);
 
 #endif

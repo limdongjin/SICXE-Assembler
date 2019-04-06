@@ -83,8 +83,14 @@ shell_status execute_opcodelist(State* state_store);
  */
 shell_status execute_assemble(Command *user_command, State* state_store);
 
+/*
+ *  type 명령어
+ */
 shell_status execute_type(Command* user_command);
 
+/*
+ * symbol 명령어
+ */
 shell_status execute_symbol(State *state_store);
 
 #endif

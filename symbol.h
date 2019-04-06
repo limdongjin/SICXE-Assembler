@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
+
 typedef struct symbol {
     char label[11];
     int location_counter;
@@ -35,18 +36,44 @@ typedef struct symbol_table {
     int size;
 }SymbolTable;
 
+/*
+ * Symbol table 생성자 함수
+ */
 SymbolTable* construct_symbol_table();
-//SymLinkedList* construct_symbol_linked_list();
+
+/*
+ * Symbol table 소멸자 함수
+ */
 bool destroy_symbol_table(SymbolTable** table);
 
+/*
+ * SymNode 생성자 함수
+ */
 SymNode* construct_symbol_node();
+
+/*
+ * Symbol 생성자 함수
+ */
 Symbol* construct_symbol();
+
+/*
+ * SymbolTable 구조체의 해시테이블에 Symbol 을 추가한다.
+ */
 bool insert_symbol(SymbolTable* table, Symbol* symbol);
 
-Symbol * find_symbol_by_name(SymbolTable *table, char *name);
-//bool find_symbol(SymbolTable* table, Symbol* symb);
+/*
+ * Symbol 을 찾는 함수
+ */
+Symbol* find_symbol_by_name(SymbolTable *table, char *name);
+
+/*
+* SymbolTable 에 저장된 Symbol 들을 내림차순으로 출력한다
+*/
 void print_symbols(SymbolTable* table);
 
+/*
+ * Sort Comparator 함수
+ */
 int symbol_comparator(const void *a, const void *b);
 
 #endif

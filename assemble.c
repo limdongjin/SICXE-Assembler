@@ -1,5 +1,8 @@
 #include "assemble.h"
 
+/*
+ * register mnemonic 을 숫자값으로 변환한다
+ */
 int reg_mnemonic_num (char *reg_mnemonic){
     if (COMPARE_STRING(reg_mnemonic, "A")) return 0;
     if (COMPARE_STRING(reg_mnemonic, "X")) return 1;
@@ -13,6 +16,14 @@ int reg_mnemonic_num (char *reg_mnemonic){
     return -1;
 }
 
+/*
+ * Statement 의 format 을 검사한다.
+ * ex)
+ *      is_format(&stmt, 0) : END, BYTE, WORD, RESB 등인지 검사 ( DEFAULT format 이라 부르겠다)
+ *      is_format(&stmt, 1) : format 1 인지 검사
+ *      is_format(&stmt, 2) : format 2 인지 검사
+ *      is_format(&stmt, 3) : format 3/4 인지 검사
+ */
 bool is_format(Statement* stmt, int num){
     if(num == 1) {
         return stmt->opcode->format == OP_FORMAT_1;
@@ -33,9 +44,20 @@ bool is_format(Statement* stmt, int num){
     }
 }
 
-bool
-record_stmt_for_pass2(Statement *stmt, int *obj_code, int *location_counter, int *r_lc, int *line_num, FILE *lst_fp,
-                      FILE *obj_fp, char **obj_buf, char **byte_buf, char **rec_head) {
+/*
+ * Statement 의 format 에 따라서 적절히
+ * obj_code, location_counter, line_num 등을 .obj, .list 파일에 기록한다
+ */
+bool record_stmt_for_pass2(Statement *stmt,
+                           const int *obj_code,
+                           const int *location_counter,
+                           int *r_lc,
+                           const int *line_num,
+                           FILE *lst_fp,
+                           FILE *obj_fp,
+                           char **obj_buf,
+                           char **byte_buf,
+                           char **rec_head) {
     const char *format;
     if (is_format(stmt, 1)){
         format = "%d\t%04X%-30s%02X\n";
@@ -105,7 +127,15 @@ record_stmt_for_pass2(Statement *stmt, int *obj_code, int *location_counter, int
     return true;
 }
 
-bool handling_format_default(SymbolTable *symbol_table, Statement *stmt, int *obj_code, bool *is_base, int *base,
+/*
+ * Default format (WORD, BASE 등등) 의 statement 를
+ * 적절히 handling 하여 is_base, obj_code, base, b_buf 등의 값을 조정한다.
+ */
+bool handling_format_default(SymbolTable *symbol_table,
+                             Statement *stmt,
+                             int *obj_code,
+                             bool *is_base,
+                             int *base,
                              char **b_buf) {
     if (COMPARE_STRING(stmt->opcode->mnemonic_name, "BASE")){
         if(stmt->token_cnt != 1) return false;
@@ -161,10 +191,19 @@ bool handling_format_default(SymbolTable *symbol_table, Statement *stmt, int *ob
     return true;
 }
 
-bool
-handling_format3(SymbolTable *symbol_table, Statement *stmt, int *obj_code, int *location_counter,
-                 int **location_counters,
-                 int *location_counter_cnt, int stmt_size, bool *is_base, int *base) {
+/*
+ * format 3/4 의 statement 를
+ * 적절히 handling 하여 obj_code 를 조정한다.
+ */
+bool handling_format3(SymbolTable *symbol_table,
+                      Statement *stmt,
+                      int *obj_code,
+                      const int *location_counter,
+                      int **location_counters,
+                      int *location_counter_cnt,
+                      int stmt_size,
+                      const bool *is_base,
+                      const int *base) {
     BitsFormat3 bitsFormat3; bitsFormat3.res = 0;
     BitsFormat4 bitsFormat4;
 
@@ -321,6 +360,10 @@ handling_format3(SymbolTable *symbol_table, Statement *stmt, int *obj_code, int 
     return true;
 }
 
+/*
+ * format 3/4 의 statement 를
+ * 적절히 handling 하여 obj_code 를 조정한다.
+ */
 bool handling_format2(Statement *stmt, int *obj_code) {
     BitsFormat2 bits;
     if(stmt->opcode->format == OP_FORMAT_2_GEN){
@@ -377,6 +420,10 @@ bool handling_format2(Statement *stmt, int *obj_code) {
     return true;
 }
 
+/*
+ * format 1 의 statement 를
+ * 적절히 handling 하여 obj_code 를 조정한다.
+ */
 bool handling_format1(Statement* stmt, int* obj_code){
     if (stmt->token_cnt != 0) return false;
     *obj_code = stmt->opcode->value;
@@ -384,6 +431,9 @@ bool handling_format1(Statement* stmt, int* obj_code){
     return true;
 }
 
+/*
+ * input 을 토크나이징하여 stmt->tokens 와 stmt->token_cnt 를 조정함
+ */
 bool tokenizing_stmt_tokens(Statement* stmt, char* input){
     stmt->token_cnt = 0;
     stmt->tokens[stmt->token_cnt] = strtok (input, " ,\t\n");
@@ -393,12 +443,18 @@ bool tokenizing_stmt_tokens(Statement* stmt, char* input){
     return true;
 }
 
+/*
+ * Statement 가 주석인지 아닌지 확인한다
+ */
 bool is_comment_stmt(Statement* stmt){
     if(stmt->tokens[0][0] != '.') return false;
     if(stmt->comment) return true;
     return true;
 }
 
+/*
+ * Statement 구조체에 이 statement 가 주석이라는 표시를 한다.
+ */
 bool mark_comment_stmt(Statement* stmt){
     assert(is_comment_stmt(stmt));
 
@@ -408,12 +464,19 @@ bool mark_comment_stmt(Statement* stmt){
     return true;
 }
 
+/*
+ * +JSUB 과 같이 opcode 앞에 +가 붙었는지 확인
+ */
 bool is_plus_stmt(Statement *stmt, int str_idx) {
     if(stmt->tokens[str_idx][0] != '+') return false;
 
     return true;
 }
 
+/*
+ * Statement 가 +JSUB 과 같이 opcode 앞에 +가 붙은 경우에
+ * stmt->plus = true 로 설정함
+ */
 bool mark_plus_true_or_false(Statement *stmt, int str_idx) {
     if(is_plus_stmt(stmt, str_idx))
         stmt->plus = true;
@@ -423,6 +486,9 @@ bool mark_plus_true_or_false(Statement *stmt, int str_idx) {
     return true;
 }
 
+/*
+ * Statement 의 format 에 따라서 적절히 location_counter 값을 증가시킴
+ */
 void update_location_counter_by_format(Statement *stmt, int *location_counter) {
     if (is_format(stmt, 1)){
         *location_counter += 1;
@@ -437,7 +503,11 @@ void update_location_counter_by_format(Statement *stmt, int *location_counter) {
     }
 }
 
-bool update_location_counter_by_mnemonic_name(Statement *stmt, int *location_counter){
+/*
+ * Statement 의 opcode 의 mnemonic 에 따라서 적절히 location_counter 를 증가시킴
+ */
+bool update_location_counter_by_mnemonic_name(Statement *stmt,
+        int *location_counter){
     int len, b;
     if (COMPARE_STRING(stmt->opcode->mnemonic_name, "BYTE")){
         if (stmt->token_cnt != 1) return false;
@@ -471,15 +541,21 @@ bool update_location_counter_by_mnemonic_name(Statement *stmt, int *location_cou
     return true;
 }
 
-bool update_location_counter_by_plus_and_format(Statement *stmt, int *old_location_counter){
+/*
+ * Statement 가 plus 이면서 format 3/4 인경우에 location_counter 를 1 증가 시킴
+ */
+bool update_location_counter_by_plus_and_format(Statement *stmt, int *location_counter){
     if (stmt->plus){
-        if (is_format(stmt, 3)) ++(*old_location_counter);
+        if (is_format(stmt, 3)) ++(*location_counter);
         else return false;
     }
 
     return true;
 }
 
+/*
+ * pass 2 를 끝낼 시점인지 아닌지 확인함
+ */
 bool is_end_condition(Statement *stmt, FILE *fp) {
     if (feof (fp) != 0)
         return true;
@@ -489,9 +565,19 @@ bool is_end_condition(Statement *stmt, FILE *fp) {
     return false;
 }
 
-bool
-error_handling_pass1or2(Statement *stmt, FILE *fp1, FILE *fp2, FILE *fp3, char *rm_file_name1, char *rm_file_name2,
-                        char *rm_file_name3, int line_num) {
+/*
+ * 에러일 경우 이 함수가 실행된다.
+ * 파일들을 전부 close 하고, 파라미터로 보낸 이름의 파일들을 삭제한다.
+ * 에러가 난 Line 을 출력해준다.
+ */
+bool error_handling_pass1or2(Statement *stmt,
+                             FILE *fp1,
+                             FILE *fp2,
+                             FILE *fp3,
+                             char *rm_file_name1,
+                             char *rm_file_name2,
+                             char *rm_file_name3,
+                             int line_num){
     if(fp1) fclose(fp1);
     if(fp2) fclose(fp2);
     if(fp3) fclose(fp3);
@@ -507,7 +593,13 @@ error_handling_pass1or2(Statement *stmt, FILE *fp1, FILE *fp2, FILE *fp3, char *
     return true;
 }
 
-bool symbolizing_by_name(OpcodeTable *opcode_table, Statement *stmt, char *name) {
+/*
+ * symbol 인지 아닌지에 따라서 적절히 handling 한다.
+ */
+bool symbol_handling(OpcodeTable *opcode_table,
+                     Statement *stmt,
+                     char *name) {
+
     Opcode* opc = find_opcode_by_name(opcode_table, name);
 
     int offset;
@@ -538,6 +630,9 @@ bool symbolizing_by_name(OpcodeTable *opcode_table, Statement *stmt, char *name)
     return true;
 }
 
+/*
+ * 파일로 부터 한줄을 읽어서 Statement 변수 에 적절히 초기화하여 저장한다.
+ */
 bool read_statement(OpcodeTable *opcode_table,
                     FILE *asm_fp,
                     FILE *tmp_fp,
@@ -591,9 +686,27 @@ bool read_statement(OpcodeTable *opcode_table,
     if(stmt->plus) op_tok = &stmt->tokens[0][1];
     else op_tok = stmt->tokens[0];
 
-    if(!symbolizing_by_name(opcode_table,
-                            stmt,
-                            op_tok)) return false;
+    if(!symbol_handling(opcode_table,
+                        stmt,
+                        op_tok)) return false;
 
+    return true;
+}
+
+/*
+ * Statement 의 종류에 따라서 적절히 tmp 파일에 기록한다
+ */
+bool record_stmt_for_pass1(Statement *stmt,
+                           FILE *fp,
+                           int *location_counter,
+                           int *old_location_counter) {
+    if(is_comment_stmt(stmt)){
+        fprintf(fp, "%04X\t0\t%s\n", *location_counter, stmt->raw_input);
+        return true;
+    }
+    fprintf (fp, "%04X\t%X\t%s\n",
+             (unsigned int) *old_location_counter,
+             (unsigned int)(*location_counter - *old_location_counter),
+             stmt->raw_input);
     return true;
 }

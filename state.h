@@ -57,8 +57,14 @@ void print_histories_state(State* state_store, char* last_command);
  */
 bool assemble_file(State *state_store, char *asm_file_name);
 
+/*
+ * assembler 의 pass1 과정을 구현하였다.
+ */
 bool assemble_pass1(State *state_store, char *asm_file_name);
 
+/*
+ * assembler 의 pass2 과정을 구현하였다.
+ */
 bool assemble_pass2(State *state_store, char *asm_file_name);
 
 #endif

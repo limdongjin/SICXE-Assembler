@@ -71,6 +71,10 @@ bool is_valid_address(char *str, int max_size) {
     return true;
 }
 
+/*
+ * 문자열에서  . 이전의 문자열 을 찾아서 리턴한다.
+ * 예를들어 before_dot(2_5.asm) 은 2_5가 리턴된다.
+ */
 char *before_dot(char *name, int size) {
     char *pre;
     char* dot;

@@ -71,6 +71,9 @@ bool assemble_file(State *state_store, char *asm_file_name){
     return true;
 }
 
+/*
+ * assembler 의 pass1 과정을 구현하였다.
+ */
 bool assemble_pass1(State *state_store, char *asm_file_name) {
     FILE* asm_fp = fopen(asm_file_name, "r");
     char* tmp_file_name, *prefix, *lst_file_name, *obj_file_name;
@@ -133,41 +136,48 @@ bool assemble_pass1(State *state_store, char *asm_file_name) {
 
     while (1){
         if (is_comment_stmt(&stmt)){
-            fprintf (tmp_fp, "%04X\t0\t%s\n", location_counter, stmt.raw_input);
-        } else{
-            int old_location_counter = location_counter;
+            record_stmt_for_pass1(&stmt, tmp_fp, &location_counter, NULL);
+            if(is_end_condition(&stmt, asm_fp)) break;
 
-            if (stmt.raw_symbol){
-                if(find_symbol_by_name(state_store->symbol_table_state, stmt.raw_symbol)) {
-                    error_handling_pass1or2(&stmt, asm_fp, tmp_fp, NULL, tmp_file_name, lst_file_name, obj_file_name, line_num);
-                    return false;
-                }
-                Symbol* symbol = construct_symbol();
-                strncpy (symbol->label, stmt.raw_symbol, 10);
-
-                symbol->location_counter = location_counter;
-
-                // [TODO] symbol insert 테스트 필요
-                insert_symbol(state_store->symbol_table_state, symbol);
-            }
-            update_location_counter_by_format(&stmt, &location_counter);
-
-            if(!update_location_counter_by_mnemonic_name(&stmt, &location_counter)){
+            if (!read_statement(state_store->opcode_table_state, asm_fp, tmp_fp, &stmt, false, NULL, NULL)) {
                 error_handling_pass1or2(&stmt, asm_fp, tmp_fp, NULL, tmp_file_name, lst_file_name, obj_file_name, line_num);
                 return false;
             }
+            line_num += 5;
+            continue;
+        }
+        int old_location_counter = location_counter;
 
-            if(!update_location_counter_by_plus_and_format(&stmt, &location_counter)){
+        if (stmt.raw_symbol){
+            if(find_symbol_by_name(state_store->symbol_table_state, stmt.raw_symbol)) {
                 error_handling_pass1or2(&stmt, asm_fp, tmp_fp, NULL, tmp_file_name, lst_file_name, obj_file_name, line_num);
                 return false;
             }
+            Symbol* symbol = construct_symbol();
+            strncpy (symbol->label, stmt.raw_symbol, 10);
 
-            fprintf (tmp_fp, "%04X\t%X\t%s\n",
-                    (unsigned int) old_location_counter,
-                     (unsigned int)(location_counter - old_location_counter),
-                     stmt.raw_input);
+            symbol->location_counter = location_counter;
+
+            // [TODO] symbol insert 테스트 필요
+            insert_symbol(state_store->symbol_table_state, symbol);
+        }
+        update_location_counter_by_format(&stmt, &location_counter);
+
+        if(!update_location_counter_by_mnemonic_name(&stmt, &location_counter)){
+            error_handling_pass1or2(&stmt, asm_fp, tmp_fp, NULL, tmp_file_name, lst_file_name, obj_file_name, line_num);
+            return false;
         }
 
+        if(!update_location_counter_by_plus_and_format(&stmt, &location_counter)){
+            error_handling_pass1or2(&stmt, asm_fp, tmp_fp, NULL, tmp_file_name, lst_file_name, obj_file_name, line_num);
+            return false;
+        }
+
+//        fprintf (tmp_fp, "%04X\t%X\t%s\n",
+//                 (unsigned int) old_location_counter,
+//                 (unsigned int)(location_counter - old_location_counter),
+//                 stmt.raw_input);
+        record_stmt_for_pass1(&stmt, tmp_fp, &location_counter, &old_location_counter);
         if(is_end_condition(&stmt, asm_fp)) break;
 
         if (!read_statement(state_store->opcode_table_state, asm_fp, tmp_fp, &stmt, false, NULL, NULL)) {
