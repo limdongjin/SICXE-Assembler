@@ -158,7 +158,6 @@ bool assemble_pass1(State *state_store, char *asm_file_name) {
 
             symbol->location_counter = location_counter;
 
-            // [TODO] symbol insert 테스트 필요
             insert_symbol(state_store->symbol_table_state, symbol);
         }
         update_location_counter_by_format(&stmt, &location_counter);
