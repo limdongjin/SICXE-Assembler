@@ -88,6 +88,30 @@ bool validate_tokenizing(char *str, int token_cnt, int max_token_num) {
     return true;
 }
 
+bool validate_tokenizing_for_not_comma(char *str, int token_cnt, int max_token_num){
+    assert(str);
+
+    int length = (int)strlen(str);
+    int comma_cnt = 0;
+
+    // 토큰의 개수를 검증한다.
+    if(token_cnt > max_token_num)
+        return false;
+    if(token_cnt <= 0)
+        return false;
+
+    // 콤마의 개수를 계산한다.
+    for(int i=0;i<length; i++){
+        if(str[i] == ',')
+            comma_cnt++;
+    }
+
+    if(comma_cnt != 0)
+        return false;
+
+    return true;
+}
+
 /*
  * 사용자가 입력한 파라미터가 적절한 파라미터 값인지 검증한다.
  * (명령어에 따른 파라미터 개수, 크기, 범위 등)
@@ -96,13 +120,16 @@ bool validate_tokenizing(char *str, int token_cnt, int max_token_num) {
  */
 shell_status validate_parameters(Command *user_command){
     assert(user_command);
+
     if((user_command->type == TYPE_QUIT ||
         user_command->type == TYPE_HELP ||
         user_command->type == TYPE_HISTORY ||
         user_command->type == TYPE_DIR ||
         user_command->type == TYPE_RESET ||
         user_command->type == TYPE_OPCODELIST ||
-        user_command->type == TYPE_SYMBOL
+        user_command->type == TYPE_SYMBOL ||
+        user_command->type == TYPE_RUN ||
+        user_command->type == TYPE_BP_LIST
        ) &&
        user_command->token_cnt > 1)
         return INVALID_PARAMETERS;
@@ -118,6 +145,14 @@ shell_status validate_parameters(Command *user_command){
         return validate_dump_parameters(user_command);
     if(user_command->type == TYPE_ASSEMBLE)
         return validate_assemble_parameters(user_command);
+    if(user_command->type == TYPE_PROGADDR)
+        return validate_progaddr_parameters(user_command);
+    if(user_command->type == TYPE_BP)
+        return validate_bp_parameters(user_command);
+    if(user_command->type == TYPE_BP_CLEAR)
+        return validate_bp_clear_parameters(user_command);
+    if(user_command->type == TYPE_LOADER)
+        return validate_loader_parameters(user_command);
     return VALID_PARAMETERS;
 }
 
@@ -238,6 +273,66 @@ shell_status validate_assemble_parameters(Command *user_command){
     assert(user_command->type == TYPE_ASSEMBLE);
 
     if(user_command->token_cnt != 2)
+        return INVALID_PARAMETERS;
+
+    return VALID_PARAMETERS;
+}
+
+/*
+ * progaddr 명령어의 파라미터를 검증한다
+ *
+ * @return VALID_PARAMETERS or INVALID_PARAMETERS
+ */
+shell_status validate_progaddr_parameters(Command *user_command){
+    assert(user_command);
+    assert(user_command->type == TYPE_PROGADDR);
+
+    if(user_command->token_cnt != 2)
+        return INVALID_PARAMETERS;
+
+    // 적절한 주소 값인지 확인한다.
+    if(!is_valid_address(user_command->tokens[1], MB))
+        return INVALID_PARAMETERS;
+
+    return VALID_PARAMETERS;
+}
+
+/*
+ * bp 명령어의 파라미터를 검증한다
+ *
+ * @return VALID_PARAMETERS or INVALID_PARAMETERS
+ */
+shell_status validate_bp_parameters(Command* user_command){
+    assert(user_command);
+    assert(user_command->type == TYPE_BP);
+
+
+    if(user_command->token_cnt != 2) {
+        return INVALID_PARAMETERS;
+    }
+
+    // 적절한 주소 값인지 확인한다.
+    if(!is_valid_address(user_command->tokens[1], MB))
+        return INVALID_PARAMETERS;
+
+    return VALID_PARAMETERS;
+}
+
+shell_status validate_bp_clear_parameters(Command* user_command){
+    assert(user_command);
+    assert(user_command->type == TYPE_BP_CLEAR);
+
+    if(user_command->token_cnt != 2)
+        return INVALID_PARAMETERS;
+
+    return VALID_PARAMETERS;
+}
+
+shell_status validate_loader_parameters(Command* user_command){
+    assert(user_command);
+    assert(user_command->type == TYPE_LOADER);
+
+    if(user_command->token_cnt > 4 || user_command->token_cnt == 1)
         return INVALID_PARAMETERS;
 
     return VALID_PARAMETERS;

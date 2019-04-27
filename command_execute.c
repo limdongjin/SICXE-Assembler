@@ -36,6 +36,18 @@ shell_status command_execute(Command *user_command, State *state_store) {
             return execute_type(user_command);
         case TYPE_SYMBOL:
             return execute_symbol(state_store);
+        case TYPE_PROGADDR:
+            return execute_progaddr(user_command, state_store);
+        case TYPE_RUN:
+            return execute_run(state_store);
+        case TYPE_BP:
+            return execute_bp(user_command, state_store);
+        case TYPE_BP_CLEAR:
+            return execute_bp_clear(state_store);
+        case TYPE_BP_LIST:
+            return execute_bp_list(state_store);
+        case TYPE_LOADER:
+            return execute_loader(user_command, state_store);
         default:
             break;
     }
@@ -263,5 +275,98 @@ shell_status execute_symbol(State *state_store) {
     if(!state_store->is_symbol_table) return EXECUTE_FAIL;
 
     print_symbols(state_store->symbol_table_state);
+    return EXECUTE_SUCCESS;
+}
+
+
+/*
+ * progaddr 명령어
+ */
+shell_status execute_progaddr(Command *user_command, State *state_store) {
+    int addr = (int)strtol(user_command->tokens[1], NULL, 16);
+
+    state_store->debugger_state->start_address = addr;
+    fprintf(stdout, "Program starting address set to 0x%04X.\n", addr);
+    return EXECUTE_SUCCESS;
+}
+
+/*
+ * run 명령어
+ * [TODO] run 명령어 실행 구현 하기!
+ */
+shell_status execute_run(State *state_store){
+    printf("start: %04X\n", state_store->debugger_state->start_address); // 디버깅용
+
+    execute_bp_list(state_store); // 디버깅용
+
+    if(state_store->debugger_state->previous_bp == -1){
+
+    }
+
+    return EXECUTE_SUCCESS;
+}
+
+/*
+ * bp 명령어
+ */
+shell_status execute_bp(Command *user_command, State *state_store) {
+    int addr = (int)strtol(user_command->tokens[1], NULL, 16);
+
+    if(state_store->debugger_state->break_points[addr] == true){
+        fprintf(stdout, "[warning] breakpoint already at %04X\n", addr);
+        return EXECUTE_SUCCESS;
+    }
+
+    state_store->debugger_state->break_points[addr] = true;
+    state_store->debugger_state->bp_count += 1;
+    fprintf(stdout, "[ok] create breakpoint %04X\n", addr);
+    return EXECUTE_SUCCESS;
+}
+
+/*
+ * bp clear 명령어
+ */
+shell_status execute_bp_clear(State *state_store){
+    int cnt = 0;
+    for(int i = 0; i < MAX_BP_NUM; i++){
+        if(state_store->debugger_state->bp_count == cnt)
+            break;
+        if(state_store->debugger_state->break_points[i] == true){
+            state_store->debugger_state->break_points[i] = false;
+            cnt++;
+        }
+    }
+    state_store->debugger_state->bp_count = 0;
+    fprintf(stdout, "[ok] clear all breakpoints\n");
+    return EXECUTE_SUCCESS;
+}
+
+/*
+ * loader 명령어
+ * [TODO] loader 명령어 실행 구현
+ */
+shell_status execute_loader(Command *user_command, State *state_store) {
+    printf("loader execute\n");
+
+    return EXECUTE_SUCCESS;
+}
+
+shell_status execute_bp_list(State* state_store){
+    int cnt = 0;
+    if(state_store->debugger_state->bp_count == 0){
+        fprintf(stdout, "no breakpoints set.\n");
+        return EXECUTE_SUCCESS;
+    }
+    fprintf(stdout, "breakpoint\n");
+    fprintf(stdout, "----------\n");
+    for(int i = 0; i  < MAX_BP_NUM; i++){
+        if(state_store->debugger_state->bp_count == cnt)
+            break;
+        if(state_store->debugger_state->break_points[i] == true) {
+            fprintf(stdout, "%04X\n", i);
+            cnt++;
+        }
+    }
+
     return EXECUTE_SUCCESS;
 }

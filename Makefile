@@ -1,4 +1,4 @@
-SOURCES=20161631.c command.c command_mapping.c command_shell.c command_execute.c history.c memory.c state.c util.c dir.c command_validate_util.c opcode.c symbol.c assemble.c
+SOURCES=20161631.c command.c command_mapping.c command_shell.c command_execute.c history.c memory.c state.c util.c dir.c command_validate_util.c opcode.c symbol.c assemble.c debug.c
 TARGET=20161631.out
 
 all: $(TARGET)

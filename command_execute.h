@@ -93,4 +93,35 @@ shell_status execute_type(Command* user_command);
  */
 shell_status execute_symbol(State *state_store);
 
+/*
+ * progaddr 명령어
+ */
+shell_status execute_progaddr(Command *user_command, State *state_store);
+
+/*
+ * run 명령어
+ */
+shell_status execute_run(State *state_store);
+
+/*
+ * bp <주소> 명령어
+ */
+shell_status execute_bp(Command *user_command, State *state_store);
+
+/*
+ * bp clear 명령어
+ */
+shell_status execute_bp_clear(State *state_store);
+
+/*
+ * bp list 출력해주는 명령어
+ */
+shell_status execute_bp_list(State* state_store);
+
+/*
+ * loader 명령어
+ */
+shell_status execute_loader(Command *user_command, State *state_store);
+
+
 #endif

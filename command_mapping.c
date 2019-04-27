@@ -13,10 +13,18 @@ shell_status command_mapping(Command* user_command){
     if(status != TOKENIZING_SUCCESS) return status;
 
     status = command_mapping_type(user_command);
-    if(!validate_tokenizing(user_command->raw_command,
-                            (int) user_command->token_cnt,
-                            TOKEN_MAX_NUM))
+
+    if(user_command->type != TYPE_LOADER
+       && !validate_tokenizing(user_command->raw_command,
+                               (int) user_command->token_cnt,
+                               TOKEN_MAX_NUM))
         return INVALID_INPUT;
+    else if(user_command->type == TYPE_LOADER
+            && !validate_tokenizing_for_not_comma(user_command->raw_command,
+                                                  (int) user_command->token_cnt,
+                                                  TOKEN_MAX_NUM))
+        return INVALID_INPUT;
+
     if(status != VALID_COMMAND_TYPE) return status;
 
     // 파라미터가 해당 명령어에 적절한지 확인한다.
@@ -94,6 +102,22 @@ shell_status command_mapping_type(Command *user_command){
         user_command->type = TYPE_TYPE;
     } else if(COMPARE_STRING(first_token, "symbol")){
         user_command->type = TYPE_SYMBOL;
+    } else if(COMPARE_STRING(first_token, "progaddr")){
+        user_command->type = TYPE_PROGADDR;
+    } else if(COMPARE_STRING(first_token, "bp")){
+        if(user_command->token_cnt >= 2){
+            char* second_token = user_command->tokens[1];
+            if(COMPARE_STRING(second_token, "clear"))
+                user_command->type = TYPE_BP_CLEAR;
+            else
+                user_command->type = TYPE_BP;
+        } else {
+            user_command->type = TYPE_BP_LIST;
+        }
+    } else if(COMPARE_STRING(first_token, "run")){
+        user_command->type = TYPE_RUN;
+    } else if(COMPARE_STRING(first_token, "loader")){
+        user_command->type = TYPE_LOADER;
     } else {
         return INVALID_COMMAND_TYPE;
     }

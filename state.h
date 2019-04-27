@@ -7,6 +7,7 @@
 #include "symbol.h"
 #include "assemble.h"
 #include "util.h"
+#include "debug.h"
 #include <stdlib.h>
 #include <stdint.h>
 
@@ -28,6 +29,9 @@ typedef struct state {
 
     // symbol 정보 저장
     SymbolTable* symbol_table_state;
+
+    // run, bp, progaddr 등의 정보 저장
+    Debugger* debugger_state;
 
     bool is_symbol_table;
 } State;
@@ -53,7 +57,7 @@ bool add_history(State *state_store, char* history_str);
 void print_histories_state(State* state_store, char* last_command);
 
 /*
- * file을 assemble 하여 state 변경 및 성공 오류 여부 리턴
+ * file 을 assemble 하여 state 변경 및 성공 오류 여부 리턴
  */
 bool assemble_file(State *state_store, char *asm_file_name);
 

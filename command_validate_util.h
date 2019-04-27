@@ -17,6 +17,8 @@
  */
 bool validate_tokenizing(char *str, int token_cnt, int max_token_num);
 
+bool validate_tokenizing_for_not_comma(char *str, int token_cnt, int max_token_num);
+
 /*
  * 사용자가 입력한 파라미터가 적절한 파라미터 값인지 검증한다.
  * (명령어에 따른 파라미터 개수, 크기, 범위 등)
@@ -55,5 +57,12 @@ shell_status validate_fill_parameters(Command *user_command);
 
 shell_status validate_assemble_parameters(Command *user_command);
 
+shell_status validate_progaddr_parameters(Command *user_command);
+
+shell_status validate_bp_parameters(Command* user_command);
+
+shell_status validate_bp_clear_parameters(Command* user_command);
+
+shell_status validate_loader_parameters(Command* user_command);
 
 #endif

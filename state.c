@@ -16,6 +16,9 @@ State* construct_state(){
 
     state_obj->symbol_table_state = construct_symbol_table();
     state_obj->is_symbol_table = false;
+
+    state_obj->debugger_state = construct_debugger();
+
     return state_obj;
 }
 
@@ -28,6 +31,7 @@ bool destroy_state(State **state_store){
     destroy_memories(&((*state_store)->memories_state));
     destroy_opcode_table(&(*state_store)->opcode_table_state);
     destroy_symbol_table(&((*state_store)->symbol_table_state));
+    destroy_debugger(&((*state_store)->debugger_state));
 
     free(*state_store);
 
@@ -59,11 +63,13 @@ bool assemble_file(State *state_store, char *asm_file_name){
 
     if(!assemble_pass1(state_store, asm_file_name)) {
         state_store->is_symbol_table = false;
+        printf("pass1 fail\n");
         return false;
     }
 
     if(!assemble_pass2(state_store, asm_file_name)){
         state_store->is_symbol_table = false;
+        printf("pass2 fail\n");
         return false;
     }
 
