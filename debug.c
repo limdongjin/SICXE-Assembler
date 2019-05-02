@@ -1,5 +1,5 @@
 #include "debug.h"
-
+#include <stdint.h>
 /* Struct or Enum */
 typedef struct instruction{
     bool extend;
