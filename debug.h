@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
-
+#include <stdint.h>
 #include "memory.h"
 #include "symbol.h"
 #include "opcode.h"
@@ -12,14 +12,14 @@
 #define MAX_BP_NUM (1024 * 1024) // 1MB
 
 typedef struct registers {
-    unsigned int A;
-    unsigned int L;
-    unsigned int X;
-    unsigned int PC;
-    unsigned int B;
-    unsigned int S;
-    unsigned int T;
-    unsigned int SW;
+    uint32_t A;
+    uint32_t L;
+    uint32_t X;
+    uint32_t PC;
+    uint32_t B;
+    uint32_t S;
+    uint32_t T;
+    uint32_t SW;
 }Registers;
 
 enum load_info_type {
