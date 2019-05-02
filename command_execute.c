@@ -354,7 +354,7 @@ shell_status execute_loader(Command *user_command, State *state_store) {
     for(int i = 0; i < 3; i++)
         state_store->debugger_state->filenames[i] = NULL;
 
-    for(int i = 1; i < user_command->token_cnt; i++)
+    for(size_t i= 1; i < user_command->token_cnt; i++)
         state_store->debugger_state->filenames[i - 1] = user_command->tokens[i];
 
     state_store->debugger_state->file_count = user_command->token_cnt - 1;

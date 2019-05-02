@@ -2,9 +2,10 @@
 
 /* Function Declarations */
 
-bool loader_linker_pass1(Debugger *debugger, Memories *memories);
+bool loader_linker_pass1(Debugger *debugger);
 bool loader_linker_pass2(Debugger *debugger, Memories *memories);
-bool loader_linker_pass1_one(Debugger *debugger, Memories *memories, int file_num, int* csaddr);
+
+bool loader_linker_pass1_one(Debugger *debugger, int file_num, int *csaddr);
 bool loader_linker_pass2_one(Debugger *debugger, Memories *memories, int file_num , int *csaddr);
 LoadInfoList* construct_load_info_list();
 bool destroy_load_info_list(LoadInfoList** load_infos);
@@ -55,7 +56,7 @@ bool loader_linker(Debugger *debugger, Memories *memories){
 
     bool status;
 
-    status = loader_linker_pass1(debugger, memories);
+    status = loader_linker_pass1(debugger);
     if(!status) return false;
 
     status = loader_linker_pass2(debugger, memories);
@@ -76,7 +77,7 @@ bool destroy_load_info_list(LoadInfoList** load_infos){
     return true;
 }
 
-bool loader_linker_pass1(Debugger *debugger, Memories *memories){
+bool loader_linker_pass1(Debugger *debugger) {
     debugger->estab = construct_symbol_table();
     debugger->load_infos = construct_load_info_list();
 
@@ -84,14 +85,14 @@ bool loader_linker_pass1(Debugger *debugger, Memories *memories){
 
     for(int i = 0; i < debugger->file_count; i++){
         int status;
-        status = loader_linker_pass1_one(debugger, memories, i, &csaddr);
+        status = loader_linker_pass1_one(debugger, i, &csaddr);
         if(!status) return false;
     }
 
     return true;
 }
 
-bool loader_linker_pass1_one(Debugger *debugger, Memories *memories, int file_num, int* csaddr){
+bool loader_linker_pass1_one(Debugger *debugger, int file_num, int *csaddr) {
     assert(file_num >= 0 && file_num <= 2);
     assert(debugger->filenames[file_num]);
 
@@ -263,7 +264,7 @@ bool loader_linker_pass2_one(Debugger *debugger, Memories *memories, int file_nu
 
             sscanf (buf, "M%06X%02X%c%02X", &offset, &length, &op_char, &num);
 
-            if (num == 0xFFFFFFFF){
+            if ((unsigned)num == 0xFFFFFFFF){
                 op_char = '+';
                 num = 0x01;
             }
