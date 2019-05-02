@@ -135,6 +135,7 @@ void print_symbols(SymbolTable* table){
                 cur=&((*cur)->next);
                 continue;
             }
+//            printf("%d %d\n", i, j);
             list[num++] = symb;
             cur = &((*cur)->next);
         }

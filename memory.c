@@ -63,7 +63,11 @@ void print_memories(Memories* memories_state, int start, int end){
  */
 void edit_memory(Memories* memories_state, int address, short value){
     assert(address < MEMORIES_SIZE && address >= 0);
-    assert(value >= 0 && value <= 0xFF);
+
+    if(value > 0xFF)
+        return;
+    if(value < 0)
+        return;
 
     memories_state->data[address].value = value;
 }

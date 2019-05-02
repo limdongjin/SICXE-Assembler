@@ -119,7 +119,7 @@ shell_status execute_bp_clear(State *state_store);
 shell_status execute_bp_list(State* state_store);
 
 /*
- * loader 명령어
+ * loader_linker 명령어
  */
 shell_status execute_loader(Command *user_command, State *state_store);
 
