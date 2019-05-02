@@ -208,3 +208,35 @@ void print_opcodes(OpcodeTable* table){
         printf("\n");
     }
 }
+
+enum op_format op_format_by_op_num(int op_num){
+    bool format3_4[260] = {
+            [0x00] = true,
+            [0x68] = true,
+            [0x74] = true,
+            [0x04] = true,
+            [0x50] = true,
+            [0x0C] = true,
+            [0x14] = true,
+            [0x10] = true,
+            [0x54] = true,
+            [0x48] = true,
+            [0x30] = true,
+            [0x34] = true,
+            [0x38] = true,
+            [0x3C] = true,
+            [0x28] = true,
+            [0xE0] = true,
+            [0xD8] = true,
+            [0x4C] = true,
+            [0xDC] = true
+    };
+    bool format2[260] = {
+            [0xB4] = true,
+            [0xA0] = true,
+            [0xB8] = true
+    };
+    if(format3_4[op_num]) return OP_FORMAT_3_4_GEN;
+    if(format2[op_num]) return OP_FORMAT_2_GEN;
+    return OP_FORMAT_1;
+}

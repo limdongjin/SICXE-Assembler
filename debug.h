@@ -3,19 +3,23 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+
 #include "memory.h"
 #include "symbol.h"
+#include "opcode.h"
+
 #include <string.h>
 #define MAX_BP_NUM (1024 * 1024) // 1MB
 
 typedef struct registers {
-    int A;
-    int L;
-    int X;
-    int PC;
-    int B;
-    int S;
-    int T;
+    unsigned int A;
+    unsigned int L;
+    unsigned int X;
+    unsigned int PC;
+    unsigned int B;
+    unsigned int S;
+    unsigned int T;
+    unsigned int SW;
 }Registers;
 
 enum load_info_type {
@@ -59,6 +63,7 @@ bool destroy_debugger(Debugger** debugger);
 
 Registers* construct_registers();
 bool destroy_registers(Registers** registers);
+void reset_registers(Registers* registers);
 
 bool loader_linker(Debugger *debugger, Memories *memories);
 

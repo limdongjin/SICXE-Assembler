@@ -102,4 +102,6 @@ Opcode* find_opcode_by_name(OpcodeTable* table, char* name);
  */
 void print_opcodes(OpcodeTable* table);
 
+enum op_format op_format_by_op_num(int op_num);
+
 #endif

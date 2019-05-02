@@ -302,9 +302,14 @@ shell_status execute_run(State *state_store){
     printf("run_count: %d\n",state_store->debugger_state->run_count);
     printf("previous_bp: %04X\n", state_store->debugger_state->previous_bp);
     printf("====DEBUG=========\n");
+    bool status;
 
-    Debugger* debugger = state_store->debugger_state;
+    if(!state_store->debugger_state->is_running){
+        state_store->debugger_state->registers->PC = state_store->debugger_state->start_address;
+    }
 
+    status = run(state_store->debugger_state, state_store->memories_state);
+    if(!status) return EXECUTE_FAIL;
 
     return EXECUTE_SUCCESS;
 }
@@ -349,8 +354,8 @@ shell_status execute_bp_clear(State *state_store){
  * loader 명령어
  */
 shell_status execute_loader(Command *user_command, State *state_store) {
-    printf("loader_linker execute\n");
-
+//    printf("loader_linker execute\n");
+    bool status;
     for(int i = 0; i < 3; i++)
         state_store->debugger_state->filenames[i] = NULL;
 
@@ -358,9 +363,8 @@ shell_status execute_loader(Command *user_command, State *state_store) {
         state_store->debugger_state->filenames[i - 1] = user_command->tokens[i];
 
     state_store->debugger_state->file_count = user_command->token_cnt - 1;
-
-    if(!loader_linker(state_store->debugger_state, state_store->memories_state))
-        return EXECUTE_FAIL;
+    status = loader_linker(state_store->debugger_state, state_store->memories_state);
+    if(!status) return EXECUTE_FAIL;
 
     state_store->debugger_state->run_count = 0;
     state_store->debugger_state->previous_bp = -1;
