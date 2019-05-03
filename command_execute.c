@@ -84,7 +84,12 @@ void execute_help(){
             "opcodelist\n"
             "assemble filename\n"
             "type filename\n"
-            "symbol\n");
+            "symbol\n"
+            "loader [filename1] [filename2] ...\n"
+            "run\n"
+            "bp\n"
+            "progaddr [address]\n"
+            );
 }
 
 /*
