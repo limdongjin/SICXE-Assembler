@@ -99,9 +99,6 @@ static bool loader_linker_pass2_one(Debugger *debugger, Memories *memories, int 
 // 생성자 함수
 static LoadInfoList* construct_load_info_list();
 
-// 소멸자 함수
-static bool destroy_load_info_list(LoadInfoList** load_infos);
-
 // load 된 정보를 출력함.
 static void print_load_infos(LoadInfoList *load_infos);
 
@@ -199,7 +196,6 @@ bool loader_linker(Debugger *debugger, Memories *memories){
 
     print_load_infos(debugger->load_infos);
 
-    destroy_load_info_list(&(debugger->load_infos));
     destroy_symbol_table(&(debugger->estab));
 
     return true;
@@ -289,13 +285,6 @@ bool run(Debugger *debugger, Memories *memories){
  * 함수 상세 설명(주석)은 declaration 파트 참고
  * Static Function Definitions
  */
-static bool destroy_load_info_list(LoadInfoList** load_infos){
-    assert(load_infos);
-    free(*load_infos);
-
-    return true;
-}
-
 static bool loader_linker_pass1(Debugger *debugger) {
     debugger->estab = construct_symbol_table();
     debugger->load_infos = construct_load_info_list();
