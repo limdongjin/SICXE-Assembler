@@ -290,7 +290,7 @@ shell_status execute_symbol(State *state_store) {
 shell_status execute_progaddr(Command *user_command, State *state_store) {
     int addr = (int)strtol(user_command->tokens[1], NULL, 16);
 
-    state_store->debugger_state->start_address = addr;
+    state_store->debugger_state->start_address = (uint32_t)addr;
     fprintf(stdout, "Program starting address set to 0x%04X.\n", addr);
     state_store->debugger_state->is_loaded = false;
     return EXECUTE_SUCCESS;

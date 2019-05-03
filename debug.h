@@ -45,7 +45,7 @@ typedef struct load_info_list {
 
 // load, run, bp, 레지스터 관리 등의 역활을함.
 typedef struct debugger {
-    int start_address; // 10 진수로 변환하여 저장함.
+    uint32_t start_address; // 10 진수로 변환하여 저장함.
     int end_address;
     bool break_points[MAX_BP_NUM]; // 해당 셀에 브레이크포인트가 걸렸는지 안걸렸는지 여부 저장
     int bp_count; // 브레이크 포인트 개수

@@ -274,7 +274,7 @@ bool run(Debugger *debugger, Memories *memories){
         is_continue = false;
     }
 
-    registers->PC = debugger->start_address + debugger->load_infos->list[0].length;
+    registers->PC = debugger->start_address + (uint32_t)debugger->load_infos->list[0].length;
     print_registers(registers);
 
     debugger->previous_bp = -1;
@@ -300,7 +300,7 @@ static bool loader_linker_pass1(Debugger *debugger) {
     debugger->estab = construct_symbol_table();
     debugger->load_infos = construct_load_info_list();
 
-    int csaddr = debugger->start_address;
+    int csaddr = (int)debugger->start_address;
 
     for(int i = 0; i < debugger->file_count; i++){
         int status;
@@ -391,7 +391,7 @@ static bool loader_linker_pass1_one(Debugger *debugger, int file_num, int *csadd
 }
 
 static bool loader_linker_pass2(Debugger *debugger, Memories *memories){
-    int csaddr = debugger->start_address;
+    int csaddr = (int)debugger->start_address;
 
     for(int i = 0; i < debugger->file_count; i++){
         int status;
