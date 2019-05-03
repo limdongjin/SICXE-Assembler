@@ -287,6 +287,7 @@ shell_status execute_progaddr(Command *user_command, State *state_store) {
 
     state_store->debugger_state->start_address = addr;
     fprintf(stdout, "Program starting address set to 0x%04X.\n", addr);
+    state_store->debugger_state->is_loaded = false;
     return EXECUTE_SUCCESS;
 }
 
@@ -295,15 +296,11 @@ shell_status execute_progaddr(Command *user_command, State *state_store) {
  * [TODO] run 명령어 실행 구현 하기!
  */
 shell_status execute_run(State *state_store){
-    printf("====DEBUG=========\n");
-    printf("start: %04X\n", state_store->debugger_state->start_address); // 디버깅용
-    execute_bp_list(state_store); // 디버깅용
-    printf("bp_count: %d\n", state_store->debugger_state->bp_count);
-    printf("run_count: %d\n",state_store->debugger_state->run_count);
-    printf("previous_bp: %04X\n", state_store->debugger_state->previous_bp);
-    printf("====DEBUG=========\n");
     bool status;
-
+    if(!state_store->debugger_state->is_loaded){
+        fprintf(stderr, "[ERROR] Not Loaded\n");
+        return EXECUTE_FAIL;
+    }
     if(!state_store->debugger_state->is_running){
         state_store->debugger_state->registers->PC = state_store->debugger_state->start_address;
     }
@@ -370,6 +367,7 @@ shell_status execute_loader(Command *user_command, State *state_store) {
     state_store->debugger_state->previous_bp = -1;
     // state_store->debugger_state->end_address 설정 해주기.
     state_store->debugger_state->end_address = MAX_BP_NUM - 1;
+    state_store->debugger_state->is_loaded = true;
 
     return EXECUTE_SUCCESS;
 }

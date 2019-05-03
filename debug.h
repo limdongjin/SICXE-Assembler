@@ -54,8 +54,9 @@ typedef struct debugger {
 
     SymbolTable* estab;
     LoadInfoList* load_infos;
-
+    uint32_t total_length;
     bool is_running;
+    bool is_loaded;
 } Debugger;
 
 Debugger* construct_debugger();
