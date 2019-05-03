@@ -1,6 +1,9 @@
 #include "debug.h"
 #include <stdint.h>
-/* Struct or Enum */
+
+/*
+ * Struct or Enum Declarations and Definition
+ */
 typedef struct instruction{
     bool extend;
     unsigned char opcode;
@@ -63,26 +66,44 @@ typedef enum {
     COMPR = 0xA0,
     TIXR = 0xB8
 } Operator;
-/* Function Declarations */
 
-bool loader_linker_pass1(Debugger *debugger);
-bool loader_linker_pass2(Debugger *debugger, Memories *memories);
+typedef enum {
+    ENUM_IMMEDIATE_ADDRESSING,
+    ENUM_SIMPLE_ADDRESSING,
+    ENUM_INDIRECT_ADDRESSING,
+    ENUM_ADDRESSING_ERROR
+} ADDRESSING_MODE;
 
-bool loader_linker_pass1_one(Debugger *debugger, int file_num, int *csaddr);
-bool loader_linker_pass2_one(Debugger *debugger, Memories *memories, int file_num , int *csaddr);
-LoadInfoList* construct_load_info_list();
-bool destroy_load_info_list(LoadInfoList** load_infos);
-void print_load_map (LoadInfoList* load_infos);
-void print_registers(Registers* registers);
-bool execute_operator(Debugger *debugger, Memories *memories, Instruction *instruction);
+/*
+ * Static Function Declarations
+ */
 
-static bool load_mem(Debugger *debugger, Memories *memories, Instruction *instruction, uint32_t *value,
-                     size_t bytes, bool jump_op);
-static bool store_mem (Debugger* debugger, Memories* memories, Instruction* instruction, uint32_t value, size_t bytes);
-static bool load_reg (Debugger* debugger, int reg_no, uint32_t *reg_val);
-static bool store_reg (Debugger* debugger, int reg_no, uint32_t reg_val);
-/* Function Definitions */
+/* loader_linker 함수 구현을 위한 함수들 */
+static bool loader_linker_pass1(Debugger *debugger);
+static bool loader_linker_pass2(Debugger *debugger, Memories *memories);
+static bool loader_linker_pass1_one(Debugger *debugger, int file_num, int *csaddr);
+static bool loader_linker_pass2_one(Debugger *debugger, Memories *memories, int file_num , int *csaddr);
+static LoadInfoList* construct_load_info_list();
+static bool destroy_load_info_list(LoadInfoList** load_infos);
+static void print_load_infos(LoadInfoList *load_infos);
 
+/* run 함수를 구현을 위한 함수들 */
+static void print_registers(Registers* registers);
+static bool execute_operator(Debugger *debugger, Memories *memories, Instruction *instruction);
+static uint32_t calculate_TA(Instruction* instruction, Registers* registers);
+static ADDRESSING_MODE calculate_addressing_mode(Instruction* instruction, bool jump_op);
+static uint32_t *get_reg_by_id(Registers *registers, int reg_id);
+static bool handling_bp(Debugger *debugger, int instruction_size);
+static bool load_from_memory(Debugger *debugger, Memories *memories, Instruction *instruction, uint32_t *value,
+                             size_t bytes, bool jump_op);
+static bool store_to_memory(Debugger *debugger, Memories *memories, Instruction *instruction, uint32_t value,
+                            size_t bytes);
+static bool load_from_register(Debugger *debugger, int reg_id, uint32_t *val);
+static bool store_to_register(Debugger *debugger, int reg_id, uint32_t val);
+
+/*
+ * Function Definitions (public)
+ */
 Debugger* construct_debugger(){
     Debugger* debugger = (Debugger*)malloc(sizeof(*debugger));
 
@@ -137,7 +158,7 @@ bool loader_linker(Debugger *debugger, Memories *memories){
     status = loader_linker_pass2(debugger, memories);
     if(!status) return false;
 
-    print_load_map(debugger->load_infos);
+    print_load_infos(debugger->load_infos);
 
     destroy_load_info_list(&(debugger->load_infos));
     destroy_symbol_table(&(debugger->estab));
@@ -145,14 +166,97 @@ bool loader_linker(Debugger *debugger, Memories *memories){
     return true;
 }
 
-bool destroy_load_info_list(LoadInfoList** load_infos){
+bool run(Debugger *debugger, Memories *memories){
+    Registers* registers = debugger->registers;
+    uint32_t tmp;
+    bool is_continue = debugger->is_running;
+
+    if(!debugger->is_running){
+        tmp = registers->PC;
+        reset_registers(registers);
+        registers->PC = tmp;
+    }
+
+    debugger->is_running = true;
+
+    while (registers->PC != 0x00FFFFFF){
+        uint8_t opcode;
+        uint32_t instruction_val = 0;
+        uint8_t memory_val;
+        int instruction_size;
+
+        enum op_format format;
+        memory_val = (uint8_t)memories->data[registers->PC].value;
+
+        instruction_val = memory_val;
+        opcode = memory_val & 0xFC;
+        format = op_format_by_op_num(opcode);
+
+        switch (format){
+            case OP_FORMAT_1:
+                instruction_size = 1;
+                break;
+            case OP_FORMAT_2_GEN:
+                memory_val = (unsigned char)memories->data[registers->PC + 1].value;
+                instruction_size = 2;
+                instruction_val = (instruction_val << 8) + memory_val;
+                break;
+            case OP_FORMAT_3_4_GEN:
+                memory_val = (unsigned char)memories->data[registers->PC + 1].value;
+                instruction_val = (instruction_val << 8) + memory_val;
+                memory_val = (unsigned char)memories->data[registers->PC + 2].value;
+                instruction_val = (instruction_val << 8) + memory_val;
+                instruction_size = 3;
+                if (instruction_val & (1 << 12)){
+                    memory_val = (unsigned char)memories->data[registers->PC + 3].value;
+                    instruction_val = (instruction_val << 8) + memory_val;
+                    ++instruction_size;
+                }
+                break;
+            default:
+                return false;
+        }
+
+        if (!is_continue){
+            bool is_break = handling_bp(debugger, instruction_size);
+            if(is_break) return true;
+        }
+
+        Instruction instruction;
+        instruction.opcode = opcode;
+        instruction.extend = (instruction_size == 4);
+        instruction.param.param.val = instruction_val;
+
+        bool status;
+        registers->PC += instruction_size;
+
+        status = execute_operator(debugger, memories, &instruction);
+        if(!status) return false;
+        is_continue = false;
+    }
+
+    registers->PC = debugger->start_address + debugger->load_infos->list[0].length;
+    print_registers(registers);
+
+    debugger->previous_bp = -1;
+    printf("End program\n");
+
+    debugger->is_running = false;
+    return true;
+}
+
+
+/*
+ * Static Function Definitions
+ */
+static bool destroy_load_info_list(LoadInfoList** load_infos){
     assert(load_infos);
     free(*load_infos);
 
     return true;
 }
 
-bool loader_linker_pass1(Debugger *debugger) {
+static bool loader_linker_pass1(Debugger *debugger) {
     debugger->estab = construct_symbol_table();
     debugger->load_infos = construct_load_info_list();
 
@@ -167,7 +271,7 @@ bool loader_linker_pass1(Debugger *debugger) {
     return true;
 }
 
-bool loader_linker_pass1_one(Debugger *debugger, int file_num, int *csaddr) {
+static bool loader_linker_pass1_one(Debugger *debugger, int file_num, int *csaddr) {
     assert(file_num >= 0 && file_num <= 2);
     assert(debugger->filenames[file_num]);
 
@@ -246,7 +350,7 @@ bool loader_linker_pass1_one(Debugger *debugger, int file_num, int *csaddr) {
     return true;
 }
 
-bool loader_linker_pass2(Debugger *debugger, Memories *memories){
+static bool loader_linker_pass2(Debugger *debugger, Memories *memories){
     int csaddr = debugger->start_address;
 
     for(int i = 0; i < debugger->file_count; i++){
@@ -258,7 +362,7 @@ bool loader_linker_pass2(Debugger *debugger, Memories *memories){
     return true;
 }
 
-bool loader_linker_pass2_one(Debugger *debugger, Memories *memories, int file_num , int *csaddr){
+static bool loader_linker_pass2_one(Debugger *debugger, Memories *memories, int file_num , int *csaddr){
     assert(file_num >= 0 && file_num <= 2);
     assert(debugger->filenames[file_num]);
 
@@ -379,14 +483,14 @@ bool loader_linker_pass2_one(Debugger *debugger, Memories *memories, int file_nu
     return true;
 }
 
-LoadInfoList* construct_load_info_list(){
+static LoadInfoList* construct_load_info_list(){
     LoadInfoList* loadInfoList;
     loadInfoList = (LoadInfoList*)malloc(sizeof(LoadInfoList));
     loadInfoList->count = 0;
     return loadInfoList;
 }
 
-void print_load_map (LoadInfoList* load_infos){
+static void print_load_infos(LoadInfoList *load_infos){
     unsigned int total_length = 0;
     const int count = load_infos->count;
 
@@ -413,102 +517,7 @@ void print_load_map (LoadInfoList* load_infos){
     printf ("%-15c %-15c %-15s %04X%11c\n", ' ', ' ', "Total Length", total_length, ' ');
 }
 
-bool run(Debugger *debugger, Memories *memories){
-    // op_format_by_op_num(0x11)
-
-    Registers* registers = debugger->registers;
-    uint32_t tmp;
-    bool is_continue = debugger->is_running;
-
-    if(!debugger->is_running){
-        tmp = registers->PC;
-        reset_registers(registers);
-        registers->PC = tmp;
-    }
-
-    debugger->is_running = true;
-
-    while (registers->PC != 0x00FFFFFF){
-
-        uint8_t opcode;
-        uint32_t inst_val = 0;
-        uint8_t mem_val;
-        int inst_size;
-
-//        printf("PC(16): %X\n", registers->PC);
-//        assert(debugger->start_address <= registers->PC);
-        enum op_format format;
-        mem_val = (uint8_t)memories->data[registers->PC].value;
-
-        inst_val = mem_val;
-        opcode = mem_val & 0xFC;
-        format = op_format_by_op_num(opcode);
-
-        switch (format){
-            case OP_FORMAT_1:
-                inst_size = 1;
-                break;
-            case OP_FORMAT_2_GEN:
-                mem_val = (unsigned char)memories->data[registers->PC + 1].value;
-                inst_size = 2;
-                inst_val = (inst_val << 8) + mem_val;
-                break;
-            case OP_FORMAT_3_4_GEN:
-                mem_val = (unsigned char)memories->data[registers->PC + 1].value;
-                inst_val = (inst_val << 8) + mem_val;
-                mem_val = (unsigned char)memories->data[registers->PC + 2].value;
-                inst_val = (inst_val << 8) + mem_val;
-                inst_size = 3;
-                if (inst_val & (1 << 12)){
-                    mem_val = (unsigned char)memories->data[registers->PC + 3].value;
-                    inst_val = (inst_val << 8) + mem_val;
-                    ++inst_size;
-                }
-                break;
-            default:
-                return false;
-        }
-
-        unsigned int bp;
-        if (!is_continue){
-            bool is_break = false;
-            for(unsigned int i = registers->PC; i < registers->PC + inst_size; i++){
-                if(debugger->break_points[i]){
-                    is_break = true;
-                    bp = i;
-                    break;
-                }
-            }
-            if(is_break){
-                // bp에 걸린 경우
-                print_registers(registers);
-                printf ("Stop at checkpoint[%04X]\n", bp);
-                return true;
-            }
-        }
-
-        Instruction instruction;
-        instruction.opcode = opcode;
-        instruction.extend = (inst_size == 4);
-        instruction.param.param.val = inst_val;
-        bool status;
-        registers->PC += inst_size;
-
-        status = execute_operator(debugger, memories, &instruction);
-        if(!status) return false;
-        is_continue = false;
-    }
-//    if(registers->PC == 0x00FF0000) registers->PC = 0x00FFFFFF;
-//    printf("%X\n", debugger->load_infos->list[0].length);
-    registers->PC = debugger->start_address + debugger->load_infos->list[0].length;
-    print_registers(registers);
-    printf("End program\n");
-
-    debugger->is_running = false;
-    return true;
-}
-
-bool execute_operator(Debugger *debugger, Memories *memories, Instruction *instruction) {
+static bool execute_operator(Debugger *debugger, Memories *memories, Instruction *instruction) {
     assert(debugger);
     assert(memories);
     assert(instruction);
@@ -518,70 +527,55 @@ bool execute_operator(Debugger *debugger, Memories *memories, Instruction *instr
     uint32_t val1, val2;
     static size_t device_input_idx = 0;
     char inputDevice[] = "    I am Test Device\0\0";// virtual input device
-//    char outputStream[13] = {'\0'};
+
     switch (instruction->opcode){
         case LDA:
-//            printf("lda\n");
-            load_mem(debugger, memories, instruction, &registers->A, 3, false);
+            load_from_memory(debugger, memories, instruction, &registers->A, 3, false);
             break;
         case LDB:
-//            printf("ldb\n");
-            load_mem(debugger, memories, instruction, &registers->B, 3, false);
+            load_from_memory(debugger, memories, instruction, &registers->B, 3, false);
             break;
         case LDT:
-//            printf("ldt\n");
-            load_mem(debugger, memories, instruction, &registers->T, 3, false);
+            load_from_memory(debugger, memories, instruction, &registers->T, 3, false);
             break;
         case LDX:
-//            printf("ldx\n");
-            load_mem(debugger, memories, instruction, &registers->X, 3, false);
+            load_from_memory(debugger, memories, instruction, &registers->X, 3, false);
             break;
         case LDCH:
-//            printf("ldch\n");
-            load_mem(debugger, memories, instruction, &value, 1, false);
+            load_from_memory(debugger, memories, instruction, &value, 1, false);
             registers->A = (registers->A & 0xFFFFFF00) + (value & 0xFF);
             break;
         case STA:
-//            printf("sta\n");
-            store_mem(debugger, memories, instruction, registers->A, 3);
+            store_to_memory(debugger, memories, instruction, registers->A, 3);
             break;
         case STL:
-//            printf("stl\n");
-            store_mem (debugger, memories, instruction, registers->L, 3);
+            store_to_memory(debugger, memories, instruction, registers->L, 3);
             break;
         case STX:
-//            printf("stx\n");
-            store_mem (debugger, memories, instruction, registers->X, 3);
+            store_to_memory(debugger, memories, instruction, registers->X, 3);
             break;
         case STCH:
-//            printf("stch\n");
-            store_mem (debugger, memories, instruction, registers->A & 0xFF, 1);
+            store_to_memory(debugger, memories, instruction, registers->A & 0xFF, 1);
             break;
         case JSUB:
-//            printf("jsub\n");
-            load_mem (debugger, memories, instruction, &value, 3, true);
+            load_from_memory(debugger, memories, instruction, &value, 3, true);
             registers->L = registers->PC;
             registers->PC = value;
             break;
         case JEQ:
-//            printf("jeq\n");
-            if (registers->SW == 0) load_mem(debugger, memories, instruction, &registers->PC, 3, true);
+            if (registers->SW == 0) load_from_memory(debugger, memories, instruction, &registers->PC, 3, true);
             break;
         case JGT:
-//            printf("jgt\n");
-            if ((int) registers->SW > 0) load_mem (debugger, memories, instruction, &registers->PC, 3, true);
+            if ((int) registers->SW > 0) load_from_memory(debugger, memories, instruction, &registers->PC, 3, true);
             break;
         case JLT:
-//            printf("jlt\n");
-            if ((int)registers->SW < 0) load_mem (debugger, memories, instruction, &registers->PC, 3, true);
+            if ((int)registers->SW < 0) load_from_memory(debugger, memories, instruction, &registers->PC, 3, true);
             break;
         case J:
-//            printf("j\n");
-            load_mem(debugger, memories, instruction, &registers->PC, 3, true);
+            load_from_memory(debugger, memories, instruction, &registers->PC, 3, true);
             break;
         case COMP:
-//            printf("comp\n");
-            load_mem (debugger, memories, instruction, &value, 3, false);
+            load_from_memory(debugger, memories, instruction, &value, 3, false);
             if (registers->A > value)
                 registers->SW = 1;
             else if (registers->A < value)
@@ -590,286 +584,230 @@ bool execute_operator(Debugger *debugger, Memories *memories, Instruction *instr
                 registers->SW = 0;
             break;
         case TD:
-//            printf("td\n");
             registers->SW = 1;
             break;
         case RD:
-//            printf("rd\n");
             registers->A = (registers->A & 0xFFFFFF00) + (unsigned char)inputDevice[device_input_idx++];
             if (device_input_idx >= sizeof(inputDevice) / sizeof(char))
                 device_input_idx = 0;
             break;
         case RSUB:
-//            printf("rsub\n");
             registers->PC = registers->L;
             break;
         case WD:
-//            printf("wd\n");
             // is done!
             break;
         case CLEAR:
-//            printf("clear\n");
-            store_reg (debugger, instruction->param.param.p2.r1, 0);
+            store_to_register(debugger, instruction->param.param.p2.r1, 0);
             break;
         case COMPR:
-//            printf("compr\n");
-
-//            uint32_t reg_val_1, reg_val_2;
-            load_reg (debugger, instruction->param.param.p2.r1, &val1);
-            load_reg (debugger, instruction->param.param.p2.r2, &val2);
-//            load_reg (reg_set, inst_param.param.f2_param.r2, &val2);
-            if (val1 > val2)
-                registers->SW = 1;
-            else if (val1 < val2)
-                registers->SW = -1;
-            else
-                registers->SW = 0;
+            load_from_register(debugger, instruction->param.param.p2.r1, &val1);
+            load_from_register(debugger, instruction->param.param.p2.r2, &val2);
+            if (val1 > val2) registers->SW = 1;
+            else if (val1 < val2) registers->SW = -1;
+            else registers->SW = 0;
             break;
         case TIXR:
-//            printf("tixr\n");
-
-            load_reg (debugger, instruction->param.param.p2.r1, &value);
+            load_from_register(debugger, instruction->param.param.p2.r1, &value);
             ++registers->X;
 
-            if (registers->X > value)
-                registers->SW = 1;
-            else if (registers->X < value)
-                registers->SW = -1;
-            else
-                registers->SW = 0;
+            if (registers->X > value) registers->SW = 1;
+            else if (registers->X < value) registers->SW = -1;
+            else registers->SW = 0;
             break;
         default:
-//            printf("default\n");
             return false;
     }
 
     return true;
 }
-
-static bool load_mem(Debugger *debugger, Memories *memories, Instruction *instruction, uint32_t *value,
-                     size_t bytes, bool jump_op){
-    uint32_t target_address;
-    Registers* registers = debugger->registers;
+static uint32_t calculate_TA(Instruction* instruction, Registers* registers){
+    uint32_t TA;
 
     uint32_t b = (instruction->extend ? instruction->param.param.p4.b : instruction->param.param.p3.b);
     uint32_t p = (instruction->extend ? instruction->param.param.p4.p : instruction->param.param.p3.p);
     uint32_t address = (instruction->extend ? instruction->param.param.p4.address : instruction->param.param.p3.address);
     uint32_t x = (instruction->extend ? instruction->param.param.p4.x : instruction->param.param.p3.x);
-    uint32_t n = (instruction->extend ? instruction->param.param.p4.n : instruction->param.param.p3.n);
-    uint32_t i = (instruction->extend ? instruction->param.param.p4.i : instruction->param.param.p3.i);
 
     if (b == 1 && p == 0){
-        // Base relative
-//        unsigned int address = (instruction->extend ? instruction->param.param.p4.address : instruction->param.param.p3.address);
-        target_address = address + registers->B;
-    }
-    else if (b == 0 && p == 1){
-        // PC relative
+        // Base Relative
+        TA = address + registers->B;
+    } else if (b == 0 && p == 1){
+        // PC Relative
         int32_t val;
-        uint32_t boundary;
+        uint32_t bound;
 
-        if(instruction->extend)
-            boundary = (1 << 19);
-        else
-            boundary = (1 << 11);
+        if(instruction->extend) bound = (1 << 19);
+        else bound = (1 << 11);
 
-        if(address >= boundary)
-            val = address - (boundary << 1);
-        else
-            val = address;
+        if(address >= bound) val = address - (bound << 1);
+        else val = address;
 
-        target_address = registers->PC + val;
+        TA = registers->PC + val;
     }else {
-        target_address = address;
+        TA = address;
     }
 
     if (x == 1){
-        target_address += registers->X;
+        TA += registers->X;
     }
 
-    // fprintf (stderr, "[DEBUG - load_mem] address = %08X, target_address = %08X\n", INST_PARAM (address), target_address);
+    return TA;
+}
+static bool handling_bp(Debugger *debugger, int instruction_size) {
+    bool is_break = false;
+    unsigned int bp;
 
-    bool is_immediate, is_simple, is_indirect;
-    if (jump_op){
-        is_immediate = ((n == 1) && (i == 1));
-        is_simple = ((n == 1) && (i == 0));
-        is_indirect = false;
-    }
-    else{
-        is_immediate = ((n == 0) && (i == 1));
-        is_simple = ((n == 1) && (i == 1));
-        is_indirect = ((n == 1) && (i == 0));
-    }
-
-    if (is_immediate){
-        *value = target_address;
-    }
-    else if (is_simple){
-        uint8_t mem_val;
-        *value = 0;
-        for (size_t k = 0; k < bytes; ++k){
-            mem_val = (uint8_t)memories->data[target_address + k].value;
-
-            *value = (*value << 8) + mem_val;
+    for(unsigned int i = debugger->registers->PC; i < debugger->registers->PC + instruction_size; i++){
+        if(debugger->break_points[i]){
+            if(debugger->previous_bp != -1 && i == (unsigned int)debugger->previous_bp)
+                continue;
+            is_break = true;
+            bp = i;
+            debugger->previous_bp = bp;
+            break;
         }
     }
-    else if (is_indirect)  // indirect
-    {
-        uint32_t indirect_address = 0;
-        uint8_t mem_val;
-
-        for (int k = 0; k < 3; ++k){
-            mem_val = (uint8_t)memories->data[target_address + k].value;
-            indirect_address = (indirect_address << 8) + mem_val;
-        }
-
-        *value = 0;
-        for (size_t k = 0; k < bytes; ++k){
-            mem_val = (uint8_t)memories->data[indirect_address + k].value;
-            *value = (*value << 8) + mem_val;
-        }
+    if(is_break){
+        print_registers(debugger->registers);
+        printf ("Stop at checkpoint[%04X]\n", bp);
+        return true;
     }
-    else{
-        return false;
-    }
-
-    return true;
+    return false;
 }
 
-static bool store_mem (Debugger* debugger, Memories* memories, Instruction* instruction, uint32_t value, size_t bytes){
-    uint32_t target_address;
-    uint32_t b = (instruction->extend ? instruction->param.param.p4.b : instruction->param.param.p3.b);
-    uint32_t p = (instruction->extend ? instruction->param.param.p4.p : instruction->param.param.p3.p);
-    uint32_t address = (instruction->extend ? instruction->param.param.p4.address : instruction->param.param.p3.address);
-    uint32_t x = (instruction->extend ? instruction->param.param.p4.x : instruction->param.param.p3.x);
+static ADDRESSING_MODE calculate_addressing_mode(Instruction* instruction, bool jump_op){
     uint32_t n = (instruction->extend ? instruction->param.param.p4.n : instruction->param.param.p3.n);
     uint32_t i = (instruction->extend ? instruction->param.param.p4.i : instruction->param.param.p3.i);
-    Registers* registers = debugger->registers;
 
-    if (b == 1 && p == 0) {  // Base relative
-        target_address = address + registers->B;
-    }else if (b == 0 && p == 1)  // PC relative
-    {
-        int32_t val;
-        uint32_t boundary;
-
-        if (instruction->extend)
-            boundary = (1 << 19);
-        else
-            boundary = (1 << 11);
-
-        if (address >= boundary)
-            val = address - (boundary << 1);
-        else
-            val = address;
-
-        target_address = registers->PC + val;
-    }
-    else{
-        target_address = address;
+    if(jump_op){
+        if(n == 1 && i == 1) return ENUM_IMMEDIATE_ADDRESSING;
+        if(n == 1 && i == 0) return ENUM_SIMPLE_ADDRESSING;
+        return ENUM_ADDRESSING_ERROR;
     }
 
-    if (x == 1){
-        target_address += registers->X;
+    if(n == 0 && i == 1) return ENUM_IMMEDIATE_ADDRESSING;
+    if(n == 1 && i == 1) return ENUM_SIMPLE_ADDRESSING;
+    if(n == 1 && i == 0) return ENUM_INDIRECT_ADDRESSING;
+
+    return ENUM_ADDRESSING_ERROR;
+}
+static bool load_from_memory(Debugger *debugger, Memories *memories, Instruction *instruction, uint32_t *value,
+                             size_t bytes, bool jump_op){
+    uint32_t TA;
+    ADDRESSING_MODE addr_mode;
+
+    TA = calculate_TA(instruction, debugger->registers);
+    addr_mode = calculate_addressing_mode(instruction, jump_op);
+
+    if (addr_mode == ENUM_IMMEDIATE_ADDRESSING){
+        *value = TA;
+        return true;
     }
 
-    if (n == 0 && i == 1){
+    if (addr_mode == ENUM_SIMPLE_ADDRESSING){
+        uint8_t memory_val;
+        *value = 0;
+        for (size_t k = 0; k < bytes; ++k){
+            memory_val = (uint8_t)memories->data[TA + k].value;
+
+            *value = (*value << 8) + memory_val;
+        }
+        return true;
+    }
+
+    if (addr_mode == ENUM_INDIRECT_ADDRESSING) {
+        uint32_t indirect_address = 0;
+        uint8_t memory_val;
+
+        for (int k = 0; k < 3; ++k){
+            memory_val = (uint8_t)memories->data[TA + k].value;
+            indirect_address = (indirect_address << 8) + memory_val;
+        }
+
+        *value = 0;
+        for (size_t k = 0; k < bytes; ++k){
+            memory_val = (uint8_t)memories->data[indirect_address + k].value;
+            *value = (*value << 8) + memory_val;
+        }
+        return true;
+    }
+
+    return false;
+}
+
+static bool store_to_memory(Debugger *debugger, Memories *memories, Instruction *instruction, uint32_t value,
+                            size_t bytes){
+    uint32_t TA;
+    ADDRESSING_MODE addr_mode;
+
+    TA = calculate_TA(instruction, debugger->registers);
+    addr_mode = calculate_addressing_mode(instruction, false);
+
+    if(addr_mode == ENUM_IMMEDIATE_ADDRESSING){
         return false;
-    }else if (n == 1 && i == 1){
+    }
+
+    if(addr_mode == ENUM_SIMPLE_ADDRESSING){
         for (int k = bytes-1; k >= 0; --k){
-            edit_memory(memories, target_address + k, (uint8_t)value);
+            edit_memory(memories, TA + k, (uint8_t)value);
             value >>= 8;
         }
-    }else if (n == 1 && i == 0){
+        return true;
+    }
+
+    if(addr_mode == ENUM_INDIRECT_ADDRESSING){
         uint8_t mem_val;
         uint32_t addr = 0;
         for (int k = 0; k < 3; ++k){
-            mem_val = (uint8_t)memories->data[target_address + k].value;
+            mem_val = (uint8_t)memories->data[TA + k].value;
             addr = (addr << 8) + mem_val;
         }
         for (int k = 2; k >= 0; --k){
             edit_memory(memories, addr + k, (uint8_t)value);
             value >>= 8;
         }
+        return true;
     }
-    else{
-        return false;
-    }
+
+    return false;
+}
+
+static bool load_from_register(Debugger *debugger, int reg_id, uint32_t *val){
+    uint32_t* reg = get_reg_by_id(debugger->registers, reg_id);
+    if(reg == NULL) return false;
+
+    *val = *reg;
 
     return true;
 }
+static uint32_t *get_reg_by_id(Registers *registers, int reg_id) {
+    if(reg_id == 6 || reg_id == 7) return NULL;
+    if(reg_id < 0 || reg_id > 9) return NULL;
 
-static bool load_reg (Debugger* debugger, int reg_no, uint32_t *reg_val){
-    const Registers* registers = debugger->registers;
-    switch (reg_no){
-        case 0:
-            *reg_val = registers->A;
-            break;
-        case 1:
-            *reg_val = registers->X;
-            break;
-        case 2:
-            *reg_val = registers->L;
-            break;
-        case 3:
-            *reg_val = registers->B;
-            break;
-        case 4:
-            *reg_val = registers->S;
-            break;
-        case 5:
-            *reg_val = registers->T;
-            break;
-        case 6:
-            return false; // Not supported.
-        case 8:
-            *reg_val = registers->PC;
-            break;
-        case 9:
-            *reg_val = registers->SW;
-            break;
-        default:
-            return false;
-    }
+    uint32_t* regs[10] = {
+            [0] = &registers->A,
+            [1] = &registers->X,
+            [2] = &registers->L,
+            [3] = &registers->B,
+            [4] = &registers->S,
+            [5] = &registers->T,
+            [6] = NULL,
+            [7] = NULL,
+            [8] = &registers->PC,
+            [9] = &registers->SW
+    };
+
+    return regs[reg_id];
+}
+static bool store_to_register(Debugger *debugger, int reg_id, uint32_t val){
+    uint32_t* reg = get_reg_by_id(debugger->registers, reg_id);
+    if(reg == NULL) return false;
+
+    *reg = val;
     return true;
 }
-
-static bool store_reg (Debugger* debugger, int reg_no, uint32_t reg_val){
-    Registers* registers = debugger->registers;
-    switch (reg_no){
-        case 0:
-            registers->A = reg_val;
-            break;
-        case 1:
-            registers->X = reg_val;
-            break;
-        case 2:
-            registers->L = reg_val;
-            break;
-        case 3:
-            registers->B = reg_val;
-            break;
-        case 4:
-            registers->S = reg_val;
-            break;
-        case 5:
-            registers->T = reg_val;
-            break;
-        case 6:
-            return false;
-        case 8:
-            registers->PC = reg_val;
-            break;
-        case 9:
-            registers->SW = reg_val;
-            break;
-        default:
-            return false;
-    }
-    return true;
-}
-
-void print_registers(Registers* registers){
+static void print_registers(Registers* registers){
     printf (
             "A : %06X  X : %06X \n"
             "L : %06X  PC: %06X \n"

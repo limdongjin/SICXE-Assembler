@@ -293,7 +293,6 @@ shell_status execute_progaddr(Command *user_command, State *state_store) {
 
 /*
  * run 명령어
- * [TODO] run 명령어 실행 구현 하기!
  */
 shell_status execute_run(State *state_store){
     bool status;
@@ -301,12 +300,21 @@ shell_status execute_run(State *state_store){
         fprintf(stderr, "[ERROR] Not Loaded\n");
         return EXECUTE_FAIL;
     }
+    if(state_store->debugger_state->file_count != 1){
+        fprintf(stderr, "[ERROR] Only Support One Object Run\n");
+        fprintf(stderr, "[ERROR] Must Re-Load\n");
+        return EXECUTE_FAIL;
+    }
     if(!state_store->debugger_state->is_running){
         state_store->debugger_state->registers->PC = state_store->debugger_state->start_address;
     }
 
     status = run(state_store->debugger_state, state_store->memories_state);
-    if(!status) return EXECUTE_FAIL;
+    if(!status){
+        state_store->debugger_state->is_running = false;
+        state_store->debugger_state->is_loaded = false;
+        return EXECUTE_FAIL;
+    }
 
     return EXECUTE_SUCCESS;
 }
@@ -361,7 +369,11 @@ shell_status execute_loader(Command *user_command, State *state_store) {
 
     state_store->debugger_state->file_count = user_command->token_cnt - 1;
     status = loader_linker(state_store->debugger_state, state_store->memories_state);
-    if(!status) return EXECUTE_FAIL;
+    if(!status){
+        for(int i = 0; i < 3; i++) state_store->debugger_state->filenames[i] = NULL;
+        state_store->debugger_state->file_count = 0;
+        return EXECUTE_FAIL;
+    }
 
     state_store->debugger_state->run_count = 0;
     state_store->debugger_state->previous_bp = -1;
