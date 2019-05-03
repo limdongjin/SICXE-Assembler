@@ -209,6 +209,7 @@ void print_opcodes(OpcodeTable* table){
     }
 }
 
+// format 을 매핑하는 함수
 enum op_format op_format_by_op_num(int op_num){
     bool format3_4[260] = {
             [0x00] = true,

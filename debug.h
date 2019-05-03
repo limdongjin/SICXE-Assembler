@@ -11,6 +11,7 @@
 #include <string.h>
 #define MAX_BP_NUM (1024 * 1024) // 1MB
 
+// 레지스터 값을 저장함.
 typedef struct registers {
     uint32_t A;
     uint32_t L;
@@ -22,11 +23,13 @@ typedef struct registers {
     uint32_t SW;
 }Registers;
 
+// load info 정보의 유형
 enum load_info_type {
     INFO_TYPE_CONTROL_SECTION,
     INFO_TYPE_SYMBOL
 } LoadInfoType;
 
+// load info 정보 한 단위
 typedef struct load_info_node {
     enum load_info_type type;
     char name[15];
@@ -34,12 +37,13 @@ typedef struct load_info_node {
     int length;
 }LoadInfoNode;
 
+// load 되는 정보를 저장함.
 typedef struct load_info_list {
     LoadInfoNode list[1001];
     int count;
 } LoadInfoList;
 
-// [TODO] debugger 구조체 구현
+// load, run, bp, 레지스터 관리 등의 역활을함.
 typedef struct debugger {
     int start_address; // 10 진수로 변환하여 저장함.
     int end_address;
@@ -59,15 +63,25 @@ typedef struct debugger {
     bool is_loaded;
 } Debugger;
 
+// debugger 의 생성자 함수
 Debugger* construct_debugger();
+
+// debugger 의 소멸자 함수
 bool destroy_debugger(Debugger** debugger);
 
+// registers 의 생성자 함수
 Registers* construct_registers();
+
+// registers 의 소멸자 함수
 bool destroy_registers(Registers** registers);
+
+// register 를 리셋함.
 void reset_registers(Registers* registers);
 
+// loader 명령을 실행하는 함수
 bool loader_linker(Debugger *debugger, Memories *memories);
 
+// run 명령을 실행하는 함수
 bool run(Debugger *debugger, Memories *memories);
 
 #endif

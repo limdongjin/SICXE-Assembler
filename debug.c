@@ -4,6 +4,8 @@
 /*
  * Struct or Enum Declarations and Definition
  */
+
+// Instruction 정보를 저장함.
 typedef struct instruction{
     bool extend;
     unsigned char opcode;
@@ -42,6 +44,7 @@ typedef struct instruction{
     } param;
 } Instruction;
 
+// Operator 이름과 opcode 를 매핑
 typedef enum {
     LDA = 0x00,
     LDB = 0x68,
@@ -67,6 +70,7 @@ typedef enum {
     TIXR = 0xB8
 } Operator;
 
+// Addressing mode
 typedef enum {
     ENUM_IMMEDIATE_ADDRESSING,
     ENUM_SIMPLE_ADDRESSING,
@@ -79,29 +83,64 @@ typedef enum {
  */
 
 /* loader_linker 함수 구현을 위한 함수들 */
+
+// pass1
 static bool loader_linker_pass1(Debugger *debugger);
+
+// pass2
 static bool loader_linker_pass2(Debugger *debugger, Memories *memories);
+
+// pass1 sub function
 static bool loader_linker_pass1_one(Debugger *debugger, int file_num, int *csaddr);
+
+// pass2 sub function
 static bool loader_linker_pass2_one(Debugger *debugger, Memories *memories, int file_num , int *csaddr);
+
+// 생성자 함수
 static LoadInfoList* construct_load_info_list();
+
+// 소멸자 함수
 static bool destroy_load_info_list(LoadInfoList** load_infos);
+
+// load 된 정보를 출력함.
 static void print_load_infos(LoadInfoList *load_infos);
 
 /* run 함수를 구현을 위한 함수들 */
+
+// 레지스터 상태를 출력함.
 static void print_registers(Registers* registers);
+
+// 명령을 실행함.
 static bool execute_operator(Debugger *debugger, Memories *memories, Instruction *instruction);
+
+// TA 계산함.
 static uint32_t calculate_TA(Instruction* instruction, Registers* registers);
+
+// Addressing Mode 계산함
 static ADDRESSING_MODE calculate_addressing_mode(Instruction* instruction, bool jump_op);
+
+// reg_id 로 레지스터를 찾아서 리턴함.
 static uint32_t *get_reg_by_id(Registers *registers, int reg_id);
+
+// BP 를 핸들링함.
 static bool handling_bp(Debugger *debugger, int instruction_size);
+
+// 메모리로 부터 값을 가져옴.
 static bool load_from_memory(Debugger *debugger, Memories *memories, Instruction *instruction, uint32_t *value,
                              size_t bytes, bool jump_op);
+
+// 메모리에 값을 저장함.
 static bool store_to_memory(Debugger *debugger, Memories *memories, Instruction *instruction, uint32_t value,
                             size_t bytes);
+
+// 레지터로 부터 값을 가져옴.
 static bool load_from_register(Debugger *debugger, int reg_id, uint32_t *val);
+
+// 레지스터에 값을 저장함.
 static bool store_to_register(Debugger *debugger, int reg_id, uint32_t val);
 
 /*
+ * 함수 상세 설명(주석)은 declaration 파트 참고
  * Function Definitions (public)
  */
 Debugger* construct_debugger(){
@@ -247,6 +286,7 @@ bool run(Debugger *debugger, Memories *memories){
 
 
 /*
+ * 함수 상세 설명(주석)은 declaration 파트 참고
  * Static Function Definitions
  */
 static bool destroy_load_info_list(LoadInfoList** load_infos){
