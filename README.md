@@ -25,5 +25,5 @@ $ ./20161631.out
 
 ```
 $ ./20161631.out
-sicxe> help
+sicsim> help
 ```
